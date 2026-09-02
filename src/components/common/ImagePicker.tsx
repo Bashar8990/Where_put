@@ -72,7 +72,7 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
   if (previewUrl) {
     return (
       <div className="space-y-2">
-        <div className="relative rounded-xl overflow-hidden border border-app bg-surface-muted">
+        <div className="relative radius-md overflow-hidden border border-app bg-surface-muted">
           <img
             src={previewUrl}
             alt="معاينة الصورة"
@@ -81,7 +81,7 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
           <button
             type="button"
             onClick={clearImage}
-            className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80"
+            className="absolute top-2 left-2 bg-black/60 text-white rounded-full min-w-[36px] min-h-[36px] flex items-center justify-center p-1.5 hover:bg-black/80"
             aria-label="حذف الصورة"
           >
             <X className="w-4 h-4" />
@@ -110,7 +110,7 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={busy}
-          className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-dashed border-app rounded-xl py-6 text-muted hover:text-app hover:border-brand-400 transition-colors text-sm"
+          className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-dashed border-app radius-md py-6 text-muted hover:text-app hover:border-brand-400 transition-colors text-sm"
         >
           <ImagePlus className="w-5 h-5" />
           اختيار صورة
@@ -119,7 +119,7 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
           type="button"
           onClick={() => cameraInputRef.current?.click()}
           disabled={busy}
-          className="inline-flex items-center justify-center gap-2 border-2 border-dashed border-app rounded-xl px-4 py-6 text-muted hover:text-app hover:border-brand-400 transition-colors text-sm"
+          className="inline-flex items-center justify-center gap-2 border-2 border-dashed border-app radius-md px-4 py-6 text-muted hover:text-app hover:border-brand-400 transition-colors text-sm"
           aria-label="التقاط صورة بالكاميرا"
           title="التقاط صورة"
         >

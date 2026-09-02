@@ -19,6 +19,7 @@ import {
 } from '../../services/items/itemService';
 import { CATEGORY_LABELS, type StoredItem } from '../../types';
 import { formatFullDate } from '../../utils/dates';
+import { haptic } from '../../utils/haptics';
 
 export function ItemDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -62,12 +63,14 @@ export function ItemDetailsPage() {
     if (!item) return;
     await toggleFavorite(item.id);
     await load();
+    haptic('light');
   }
 
   async function handleMoveDone() {
     setMoveOpen(false);
     await load();
     showToast({ message: 'تم تحديث مكان الغرض' });
+    haptic('success');
   }
 
   async function handleDelete() {
@@ -75,12 +78,14 @@ export function ItemDetailsPage() {
     const target = item;
     setConfirmDelete(false);
     await softDeleteItem(target.id);
+    haptic('error');
     const toastId = showToast({
       message: `تم حذف "${target.name}"`,
       actionLabel: 'تراجع',
       onAction: async () => {
         await restoreItem(target.id);
         showToast({ message: 'تمت الاستعادة' });
+        haptic('success');
         await load();
       },
       duration: 6000,
@@ -102,7 +107,7 @@ export function ItemDetailsPage() {
           <button
             type="button"
             onClick={handleFavorite}
-            className="p-2 rounded-lg hover:bg-app/5"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 radius-sm hover:bg-app/5"
             aria-label={item.isFavorite ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
             aria-pressed={item.isFavorite}
           >
@@ -120,7 +125,7 @@ export function ItemDetailsPage() {
           <button
             type="button"
             onClick={() => setLightbox(true)}
-            className="block w-full rounded-2xl overflow-hidden border border-app bg-surface-muted"
+            className="block w-full radius-lg overflow-hidden border border-app bg-surface-muted"
             aria-label="عرض الصورة بحجم أكبر"
           >
             <ItemImage
@@ -132,7 +137,7 @@ export function ItemDetailsPage() {
         )}
 
         {/* Current location — most prominent */}
-        <section className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-2xl p-4">
+        <section className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 radius-lg p-4">
           <div className="text-sm text-brand-700 dark:text-brand-300 font-semibold mb-1">
             المكان الحالي
           </div>
@@ -147,14 +152,14 @@ export function ItemDetailsPage() {
           <button
             type="button"
             onClick={() => setMoveOpen(true)}
-            className="flex flex-col items-center gap-1 bg-surface border border-app rounded-xl py-3 hover:border-brand-400"
+            className="flex flex-col items-center gap-1 bg-surface border border-app radius-md py-3 hover:border-brand-400"
           >
             <MoveRight className="w-5 h-5 text-brand-600 dark:text-brand-400" />
             <span className="text-xs">تغيير المكان</span>
           </button>
           <Link
             to={`/item/${item.id}/edit`}
-            className="flex flex-col items-center gap-1 bg-surface border border-app rounded-xl py-3 hover:border-brand-400"
+            className="flex flex-col items-center gap-1 bg-surface border border-app radius-md py-3 hover:border-brand-400"
           >
             <Pencil className="w-5 h-5 text-brand-600 dark:text-brand-400" />
             <span className="text-xs">تعديل</span>
@@ -162,7 +167,7 @@ export function ItemDetailsPage() {
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="flex flex-col items-center gap-1 bg-surface border border-app rounded-xl py-3 hover:border-red-400 text-red-600 dark:text-red-400"
+            className="flex flex-col items-center gap-1 bg-surface border border-app radius-md py-3 hover:border-red-400 text-red-600 dark:text-red-400"
           >
             <Trash2 className="w-5 h-5" />
             <span className="text-xs">حذف</span>
@@ -171,7 +176,7 @@ export function ItemDetailsPage() {
 
         {/* Notes */}
         {item.notes && (
-          <section className="bg-surface border border-app rounded-2xl p-4">
+          <section className="bg-surface border border-app radius-lg elev-card p-4">
             <div className="text-sm font-semibold text-app mb-1">ملاحظات</div>
             <p className="text-app text-sm leading-relaxed whitespace-pre-wrap">{item.notes}</p>
           </section>
@@ -179,7 +184,7 @@ export function ItemDetailsPage() {
 
         {/* Category */}
         {item.category && (
-          <section className="bg-surface border border-app rounded-2xl p-4 flex items-center justify-between">
+          <section className="bg-surface border border-app radius-lg elev-card p-4 flex items-center justify-between">
             <span className="text-sm font-semibold text-app">التصنيف</span>
             <span className="text-sm px-2.5 py-1 rounded-full bg-surface-muted border border-app text-app">
               {CATEGORY_LABELS[item.category]}
@@ -188,7 +193,7 @@ export function ItemDetailsPage() {
         )}
 
         {/* Dates */}
-        <section className="bg-surface border border-app rounded-2xl p-4 space-y-1.5 text-sm">
+        <section className="bg-surface border border-app radius-lg elev-card p-4 space-y-1.5 text-sm">
           <div className="flex justify-between">
             <span className="text-muted">تاريخ الإضافة</span>
             <span className="text-app">{formatFullDate(item.createdAt)}</span>

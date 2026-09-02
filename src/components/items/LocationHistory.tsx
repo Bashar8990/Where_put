@@ -13,7 +13,7 @@ export function LocationHistory({ item }: { item: StoredItem }) {
   const entries = open ? item.locationHistory : item.locationHistory.slice(0, 3);
 
   return (
-    <section className="bg-surface border border-app rounded-2xl p-4">
+    <section className="bg-surface border border-app radius-lg elev-card p-4">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

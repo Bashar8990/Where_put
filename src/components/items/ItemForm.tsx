@@ -77,7 +77,7 @@ export function ItemForm({
           placeholder="ما الشيء الذي تريد تذكر مكانه؟"
           required
           autoFocus
-          className="w-full bg-surface text-app border border-app rounded-xl px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition"
+          className="w-full bg-surface text-app border border-app radius-md px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition"
         />
       </Field>
 
@@ -101,7 +101,7 @@ export function ItemForm({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="أي تفاصيل تساعدك لاحقًا؟"
           rows={3}
-          className="w-full bg-surface text-app border border-app rounded-xl px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition resize-y"
+          className="w-full bg-surface text-app border border-app radius-md px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition resize-y"
         />
       </Field>
 
@@ -113,7 +113,7 @@ export function ItemForm({
         <button
           type="button"
           onClick={() => setIsFavorite((v) => !v)}
-          className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-colors ${
+          className={`inline-flex items-center gap-2 px-3 py-2 radius-md border text-sm transition-colors ${
             isFavorite
               ? 'border-amber-400 text-amber-500 bg-amber-50/50 dark:bg-amber-500/10'
               : 'border-app text-muted hover:text-app'
@@ -130,7 +130,7 @@ export function ItemForm({
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 radius-sm px-3 py-2">
           {error}
         </p>
       )}
@@ -139,14 +139,14 @@ export function ItemForm({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 px-4 py-3.5 rounded-xl text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
+          className="flex-1 px-4 py-3.5 radius-md text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
         >
           إلغاء
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="flex-[2] inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+          className="flex-[2] inline-flex items-center justify-center gap-2 px-4 py-3.5 radius-md text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
           {submitLabel}

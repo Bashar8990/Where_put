@@ -20,8 +20,8 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-      <div className="mb-4 text-muted">
-        {icon ?? <SearchX className="w-12 h-12" strokeWidth={1.5} />}
+      <div className="mb-4">
+        {icon ?? <SearchX className="w-12 h-12 text-muted" strokeWidth={1.5} />}
       </div>
       <h3 className="text-lg font-bold text-app mb-2">{title}</h3>
       {description && <p className="text-muted text-sm leading-relaxed max-w-sm mb-6">{description}</p>}
@@ -29,7 +29,7 @@ export function EmptyState({
         <button
           type="button"
           onClick={onAction}
-          className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+          className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-5 py-2.5 radius-md text-sm transition-colors"
         >
           <Plus className="w-4 h-4" />
           {actionLabel}

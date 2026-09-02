@@ -29,6 +29,7 @@ import {
 } from '../../services/storage/storageService';
 import { formatBytes } from '../../utils/images';
 import { formatFullDate } from '../../utils/dates';
+import { haptic } from '../../utils/haptics';
 
 export function SettingsPage() {
   const { settings, setTheme } = useTheme();
@@ -79,6 +80,7 @@ export function SettingsPage() {
       await updateSettings({ lastBackupAt: new Date().toISOString() });
       setLastBackup(new Date().toISOString());
       showToast({ message: 'تم إنشاء النسخة الاحتياطية' });
+      haptic('success');
     } catch (e) {
       showToast({
         message: e instanceof Error ? e.message : 'تعذّر إنشاء النسخة الاحتياطية.',
@@ -117,6 +119,7 @@ export function SettingsPage() {
             ? 'تم استبدال البيانات بالنسخة الاحتياطية'
             : 'تم دمج البيانات بنجاح',
       });
+      haptic(restoreMode === 'replace' ? 'warning' : 'success');
       setRestoreSummary(null);
       await refresh();
     } catch (err) {
@@ -134,6 +137,7 @@ export function SettingsPage() {
     try {
       await wipeAllData();
       showToast({ message: 'تم حذف جميع البيانات' });
+      haptic('error');
       await refresh();
     } finally {
       setBusy(false);
@@ -217,7 +221,7 @@ export function SettingsPage() {
           type="button"
           onClick={handleExport}
           disabled={busy || itemCount === 0}
-          className="w-full flex items-center gap-3 bg-surface border border-app rounded-xl px-4 py-3 hover:border-brand-400 disabled:opacity-50"
+          className="w-full flex items-center gap-3 bg-surface border border-app radius-md px-4 py-3 hover:border-brand-400 disabled:opacity-50"
         >
           <Download className="w-5 h-5 text-brand-600 dark:text-brand-400" />
           <span className="text-sm font-medium">تصدير نسخة احتياطية</span>
@@ -226,7 +230,7 @@ export function SettingsPage() {
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={busy}
-          className="w-full flex items-center gap-3 bg-surface border border-app rounded-xl px-4 py-3 hover:border-brand-400 disabled:opacity-50"
+          className="w-full flex items-center gap-3 bg-surface border border-app radius-md px-4 py-3 hover:border-brand-400 disabled:opacity-50"
         >
           <Upload className="w-5 h-5 text-brand-600 dark:text-brand-400" />
           <span className="text-sm font-medium">استعادة نسخة احتياطية</span>
@@ -251,13 +255,23 @@ export function SettingsPage() {
         </Link>
       </Section>
 
+      {/* About */}
+      <Section title="حول التطبيق" icon={<Info className="w-4 h-4" />}>
+        <Row label="الإصدار" value={__APP_VERSION__} />
+        <Row label="تاريخ آخر تحديث" value={formatFullDate(__BUILD_DATE__)} />
+        <p className="text-xs text-muted leading-relaxed pt-2">
+          «وين حطيته؟» تطبيق عربي بسيط يساعدك على تذكّر أين وضعت أشياءك المهمة.
+          كل بياناتك تبقى على جهازك فقط — لا خوادم، لا حسابات، لا تتبّع.
+        </p>
+      </Section>
+
       {/* Contact developer */}
       <Section title="تواصل مع المطور" icon={<MessageCircle className="w-4 h-4" />}>
         <a
           href="https://wa.me/963953812362"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 rounded-xl px-4 py-3 hover:bg-green-100 dark:hover:bg-green-950/50"
+          className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 radius-md px-4 py-3 hover:bg-green-100 dark:hover:bg-green-950/50"
         >
           <WhatsAppIcon className="w-5 h-5" />
           <span className="text-sm font-medium">تواصل عبر واتساب</span>
@@ -270,7 +284,7 @@ export function SettingsPage() {
           type="button"
           onClick={() => setConfirmWipe(true)}
           disabled={busy}
-          className="w-full flex items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 rounded-xl px-4 py-3 hover:bg-red-100 dark:hover:bg-red-950/50 disabled:opacity-50"
+          className="w-full flex items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 radius-md px-4 py-3 hover:bg-red-100 dark:hover:bg-red-950/50 disabled:opacity-50"
         >
           <Trash2 className="w-5 h-5" />
           <span className="text-sm font-medium">حذف جميع البيانات</span>
@@ -360,7 +374,7 @@ function Section({
         {icon}
         {title}
       </h2>
-      <div className="bg-surface border border-app rounded-2xl p-3 space-y-2">{children}</div>
+      <div className="bg-surface border border-app radius-lg elev-card p-3 space-y-2">{children}</div>
     </section>
   );
 }
@@ -389,7 +403,7 @@ function ThemeButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-sm transition-colors ${
+      className={`flex flex-col items-center gap-1 py-3 radius-md border text-sm transition-colors ${
         active
           ? 'bg-brand-600 text-white border-brand-600'
           : 'bg-surface text-app border-app hover:border-brand-400'

@@ -79,11 +79,11 @@ export function LocationInput({
         placeholder={placeholder}
         required={required}
         autoComplete="off"
-        className="w-full bg-surface text-app border border-app rounded-xl px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition"
+        className="w-full bg-surface text-app border border-app radius-md px-4 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition"
       />
       {showSuggest && suggestions.length > 0 && (
         <ul
-          className="absolute z-30 mt-1 w-full bg-surface border border-app rounded-xl shadow-lg max-h-56 overflow-auto no-scrollbar"
+          className="absolute z-30 mt-1 w-full bg-surface border border-app radius-md elev-sm max-h-56 overflow-auto no-scrollbar"
           role="listbox"
         >
           {suggestions.map((s, i) => (

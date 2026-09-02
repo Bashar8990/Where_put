@@ -1,7 +1,7 @@
-import { Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
+import { NoFavoritesIllustration } from '../../components/common/Illustrations';
 import { TopBar } from '../../components/common/TopBar';
 import { ItemCard } from '../../components/items/ItemCard';
 import { MoveItemSheet } from '../../components/items/MoveItemSheet';
@@ -16,6 +16,7 @@ import {
 } from '../../services/items/itemService';
 import { favoriteItems } from '../../services/search/searchService';
 import type { StoredItem } from '../../types';
+import { haptic } from '../../utils/haptics';
 
 export function FavoritesPage() {
   const { showToast } = useToast();
@@ -34,12 +35,14 @@ export function FavoritesPage() {
   async function handleToggleFavorite(id: string) {
     await toggleFavorite(id);
     await load();
+    haptic('light');
   }
 
   async function handleMoveDone() {
     setMoveTarget(null);
     await load();
     showToast({ message: 'تم تحديث مكان الغرض' });
+    haptic('success');
   }
 
   async function handleDelete() {
@@ -48,6 +51,7 @@ export function FavoritesPage() {
     setDeleteTarget(null);
     await softDeleteItem(target.id);
     await load();
+    haptic('error');
     showToast({
       message: `تم حذف "${target.name}"`,
       actionLabel: 'تراجع',
@@ -55,6 +59,7 @@ export function FavoritesPage() {
         await restoreItem(target.id);
         await load();
         showToast({ message: 'تمت الاستعادة' });
+        haptic('success');
       },
       duration: 6000,
     });
@@ -66,22 +71,27 @@ export function FavoritesPage() {
   return (
     <AppLayout>
       <TopBar title="المفضلة" showSettings />
-      <div className="space-y-3">
+      <div className="space-y-4">
         {items.length === 0 ? (
           <EmptyState
-            icon={<Star className="w-12 h-12" strokeWidth={1.5} />}
+            icon={<NoFavoritesIllustration />}
             title="لا توجد مفضلات"
             description="اضغط على نجمة الغرض لإضافته إلى المفضلة للوصول السريع."
           />
         ) : (
-          items.map((item) => (
-            <ItemCard
+          items.map((item, i) => (
+            <div
               key={item.id}
-              item={item}
-              onToggleFavorite={handleToggleFavorite}
-              onMove={setMoveTarget}
-              onDelete={setDeleteTarget}
-            />
+              className="anim-card-enter"
+              style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}
+            >
+              <ItemCard
+                item={item}
+                onToggleFavorite={handleToggleFavorite}
+                onMove={setMoveTarget}
+                onDelete={setDeleteTarget}
+              />
+            </div>
           ))
         )}
       </div>

@@ -70,7 +70,7 @@ function ToastViewport({
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="bg-surface text-app shadow-lg border border-app rounded-xl px-4 py-3 max-w-md w-full flex items-center justify-between gap-3 animate-[fadeIn_0.15s_ease-out]"
+          className="bg-surface text-app elev-md border border-app radius-md px-4 py-3 max-w-md w-full flex items-center justify-between gap-3 anim-slide-up"
           role="status"
         >
           <span className="text-sm leading-relaxed">{t.message}</span>
@@ -89,7 +89,7 @@ function ToastViewport({
             )}
             <button
               type="button"
-              className="text-muted hover:text-app p-0.5 rounded-md"
+              className="text-muted hover:text-app min-w-[36px] min-h-[36px] flex items-center justify-center p-1 radius-sm"
               aria-label="إغلاق"
               onClick={() => onDismiss(t.id)}
             >

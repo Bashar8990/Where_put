@@ -6,6 +6,7 @@ import { ItemForm, type ItemFormValues } from '../../components/items/ItemForm';
 import { useToast } from '../../components/common/Toast';
 import { getItem, updateItem } from '../../services/items/itemService';
 import type { StoredItem } from '../../types';
+import { haptic } from '../../utils/haptics';
 
 export function EditItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +48,7 @@ export function EditItemPage() {
       imageId: values.imageId,
     });
     showToast({ message: 'تم حفظ التعديلات' });
+    haptic('success');
     navigate(`/item/${id}`, { replace: true });
   }
 

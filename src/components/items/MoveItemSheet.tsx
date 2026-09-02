@@ -50,7 +50,7 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/50 backdrop-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -59,7 +59,7 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
       <div
         ref={ref}
         tabIndex={-1}
-        className="bg-surface text-app w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 border border-app shadow-xl safe-bottom outline-none"
+        className="bg-surface text-app w-full sm:max-w-md rounded-t-2xl sm:radius-lg p-5 border border-app elev-lg safe-bottom outline-none anim-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 text-sm text-muted">تغيير المكان</div>
@@ -75,14 +75,14 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 rounded-xl text-sm font-medium bg-surface-muted text-app border border-app"
+              className="flex-1 px-4 py-3 radius-md text-sm font-medium bg-surface-muted text-app border border-app"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="flex-[2] px-4 py-3 rounded-xl text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+              className="flex-[2] px-4 py-3 radius-md text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
             >
               حفظ المكان
             </button>

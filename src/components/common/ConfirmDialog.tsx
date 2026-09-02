@@ -29,7 +29,7 @@ export function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/50 backdrop-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
@@ -38,7 +38,7 @@ export function ConfirmDialog({
       <div
         ref={ref}
         tabIndex={-1}
-        className="bg-surface text-app rounded-2xl shadow-xl max-w-sm w-full p-5 border border-app outline-none"
+        className="bg-surface text-app radius-lg elev-lg max-w-sm w-full p-5 border border-app outline-none anim-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="confirm-title" className="text-lg font-bold mb-2">
@@ -48,7 +48,7 @@ export function ConfirmDialog({
         <div className="flex gap-2 justify-end">
           <button
             type="button"
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
+            className="px-4 py-2 radius-sm text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
             onClick={onCancel}
             // For destructive actions, focus the safe (cancel) button first so
             // an accidental Enter/Space does not confirm the dangerous action.
@@ -59,7 +59,7 @@ export function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold text-white ${
+            className={`px-4 py-2 radius-sm text-sm font-semibold text-white ${
               danger ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-600 hover:bg-brand-700'
             }`}
             onClick={onConfirm}

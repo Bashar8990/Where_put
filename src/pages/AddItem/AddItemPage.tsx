@@ -4,6 +4,7 @@ import { TopBar } from '../../components/common/TopBar';
 import { ItemForm, type ItemFormValues } from '../../components/items/ItemForm';
 import { useToast } from '../../components/common/Toast';
 import { createItem } from '../../services/items/itemService';
+import { haptic } from '../../utils/haptics';
 
 export function AddItemPage() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export function AddItemPage() {
       imageId: values.imageId,
     });
     showToast({ message: 'تم حفظ مكان الغرض' });
+    haptic('success');
     navigate(`/item/${item.id}`, { replace: true });
   }
 

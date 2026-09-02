@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORY_LABELS, type StoredItem } from '../../types';
 import { formatRelativeDate } from '../../utils/dates';
+import { HighlightedText } from '../common/HighlightedText';
 import { ItemImage } from '../common/ItemImage';
 
 interface ItemCardProps {
@@ -10,9 +11,11 @@ interface ItemCardProps {
   onToggleFavorite: (id: string) => void;
   onMove: (item: StoredItem) => void;
   onDelete: (item: StoredItem) => void;
+  /** Search query for highlighting matched text in name/location. */
+  highlight?: string;
 }
 
-export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardProps) {
+export function ItemCard({ item, onToggleFavorite, onMove, onDelete, highlight }: ItemCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -31,7 +34,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
   }, [menuOpen]);
 
   return (
-    <div className="bg-surface border border-app rounded-2xl p-3 sm:p-4 hover:border-brand-300 transition-colors">
+    <div className="bg-surface border border-app radius-lg elev-card p-4 sm:p-5 hover:border-brand-300 transition-colors">
       <div className="flex gap-3">
         <Link
           to={`/item/${item.id}`}
@@ -43,10 +46,10 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
               imageId={item.imageId}
               alt={item.name}
               maxWidth={72}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover bg-surface-muted"
+              className="w-16 h-16 sm:w-20 sm:h-20 radius-md object-cover bg-surface-muted"
             />
           ) : (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-surface-muted flex items-center justify-center text-muted">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 radius-md bg-surface-muted flex items-center justify-center text-muted">
               <MapPin className="w-6 h-6" strokeWidth={1.5} />
             </div>
           )}
@@ -56,7 +59,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
           <div className="flex items-start justify-between gap-2">
             <Link to={`/item/${item.id}`} className="min-w-0">
               <h3 className="font-bold text-app text-base sm:text-lg truncate flex items-center gap-1.5">
-                {item.name}
+                <HighlightedText text={item.name} query={highlight ?? ''} className="truncate" />
                 {item.isFavorite && <Star className="w-4 h-4 text-amber-400" fill="currentColor" />}
               </h3>
             </Link>
@@ -64,7 +67,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
               <button
                 ref={triggerRef}
                 type="button"
-                className="p-1.5 rounded-lg text-muted hover:text-app hover:bg-app/5"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 radius-sm text-muted hover:text-app hover:bg-app/5"
                 aria-label="إجراءات"
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
@@ -79,7 +82,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
                   <div className="fixed inset-0 z-[60]" onClick={() => setMenuOpen(false)} />
                   <div
                     role="menu"
-                    className="absolute right-0 mt-1 z-[61] bg-surface border border-app rounded-xl shadow-lg py-1 min-w-[140px]"
+                    className="absolute right-0 mt-1 z-[61] bg-surface border border-app radius-md elev-sm py-1 min-w-[140px]"
                   >
                     <button
                       type="button"
@@ -131,7 +134,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
           <Link to={`/item/${item.id}`} className="block mt-1">
             <p className="text-app text-sm sm:text-base font-semibold flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
-              <span className="truncate">{item.location}</span>
+              <HighlightedText text={item.location} query={highlight ?? ''} className="truncate" />
             </p>
           </Link>
 

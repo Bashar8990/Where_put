@@ -13,12 +13,12 @@ interface TopBarProps {
 export function TopBar({ title, showBack, backTo, showSettings, right }: TopBarProps) {
   const navigate = useNavigate();
   return (
-    <header className="flex items-center gap-2 mb-4">
+    <header className="flex items-center gap-2 mb-5">
       {showBack && (
         <button
           type="button"
           onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
-          className="p-2 rounded-lg text-app hover:bg-app/5"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 radius-sm text-app hover:bg-app/5"
           aria-label="رجوع"
         >
           <ArrowRight className="w-5 h-5" />
@@ -29,7 +29,7 @@ export function TopBar({ title, showBack, backTo, showSettings, right }: TopBarP
       {showSettings && (
         <Link
           to="/settings"
-          className="p-2 rounded-lg text-app hover:bg-app/5"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 radius-sm text-app hover:bg-app/5"
           aria-label="الإعدادات"
         >
           <Settings className="w-5 h-5" />

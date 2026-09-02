@@ -46,7 +46,7 @@ export function InstallPrompt() {
   if (!show || !deferred) return null;
 
   return (
-    <div className="fixed bottom-36 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 z-40 bg-surface border border-app rounded-2xl shadow-xl p-4 safe-bottom">
+    <div className="fixed bottom-36 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 z-40 bg-surface border border-app radius-lg elev-lg p-4 safe-bottom anim-slide-up">
       <div className="flex items-start gap-3">
         <div className="text-brand-600 dark:text-brand-400 shrink-0">
           <Download className="w-6 h-6" />
@@ -65,7 +65,7 @@ export function InstallPrompt() {
             await updateSettings({ installPromptDismissedAt: new Date().toISOString() });
             setShow(false);
           }}
-          className="flex-1 px-3 py-2 rounded-lg text-sm bg-surface-muted text-app border border-app"
+          className="flex-1 px-3 py-2 radius-sm text-sm bg-surface-muted text-app border border-app"
         >
           لاحقًا
         </button>
@@ -77,7 +77,7 @@ export function InstallPrompt() {
             setDeferred(null);
             setShow(false);
           }}
-          className="flex-1 px-3 py-2 rounded-lg text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700"
+          className="flex-1 px-3 py-2 radius-sm text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700"
         >
           تثبيت
         </button>

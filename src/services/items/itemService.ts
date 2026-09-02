@@ -165,6 +165,12 @@ export async function countItems(): Promise<number> {
   return all.filter((i) => !i.deletedAt).length;
 }
 
+/** Count active favorite items (lightweight — no full object hydration). */
+export async function countFavorites(): Promise<number> {
+  const all = await getDb().items.toArray();
+  return all.filter((i) => !i.deletedAt && i.isFavorite).length;
+}
+
 /** Distinct locations with counts, sorted by usage desc then name. */
 export async function listLocations(): Promise<{ location: string; count: number }[]> {
   const items = await listAllItems();

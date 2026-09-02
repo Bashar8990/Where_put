@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
+import { NoLocationsIllustration } from '../../components/common/Illustrations';
 import { TopBar } from '../../components/common/TopBar';
 import { listLocations } from '../../services/items/itemService';
 import { itemsAtLocation } from '../../services/search/searchService';
@@ -50,7 +51,7 @@ export function LocationsPage() {
     return (
       <AppLayout>
         <TopBar title="الأماكن" showBack backTo="/locations" />
-        <div className="mb-4 bg-surface border border-app rounded-2xl p-4">
+        <div className="mb-4 bg-surface border border-app radius-lg elev-card p-4">
           <div className="text-sm text-muted">المكان</div>
           <div className="text-app font-bold text-lg flex items-center gap-2">
             <MapPin className="w-5 h-5 text-brand-600 dark:text-brand-400" />
@@ -58,7 +59,7 @@ export function LocationsPage() {
           </div>
           <div className="text-xs text-muted mt-1">{items.length} غرض</div>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {items.length === 0 ? (
             <p className="text-muted text-sm text-center py-8">لا توجد أغراض في هذا المكان.</p>
           ) : (
@@ -66,7 +67,7 @@ export function LocationsPage() {
               <Link
                 key={item.id}
                 to={`/item/${item.id}`}
-                className="block bg-surface border border-app rounded-2xl p-4 hover:border-brand-300"
+                className="block bg-surface border border-app radius-lg elev-card p-4 hover:border-brand-300"
               >
                 <div className="font-bold text-app">{item.name}</div>
                 <div className="text-sm text-muted mt-0.5">{item.location}</div>
@@ -97,7 +98,7 @@ export function LocationsPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="ابحث عن مكان…"
               aria-label="بحث عن مكان"
-              className="w-full bg-surface text-app border border-app rounded-2xl pr-11 pl-10 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition placeholder:text-muted"
+              className="w-full bg-surface text-app border border-app radius-lg pr-11 pl-10 py-3 text-base focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition placeholder:text-muted"
             />
             {query && (
               <button
@@ -105,7 +106,7 @@ export function LocationsPage() {
                 onClick={() => {
                   setQuery('');
                 }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted hover:text-app hover:bg-app/5"
+                className="absolute left-2 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 radius-sm text-muted hover:text-app hover:bg-app/5"
                 aria-label="مسح البحث"
               >
                 <X className="w-4 h-4" />
@@ -140,10 +141,10 @@ export function LocationsPage() {
         </>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {locations.length === 0 ? (
           <EmptyState
-            icon={<MapPin className="w-12 h-12" strokeWidth={1.5} />}
+            icon={<NoLocationsIllustration />}
             title="لا توجد أماكن بعد"
             description="ستظهر هنا الأماكن التي تسجّلها عند إضافة الأغراض."
           />
@@ -157,7 +158,7 @@ export function LocationsPage() {
               key={l.location}
               type="button"
               onClick={() => setSelected(l.location)}
-              className="w-full text-right bg-surface border border-app rounded-2xl p-4 flex items-center justify-between hover:border-brand-300"
+              className="w-full text-right bg-surface border border-app radius-lg elev-card p-4 flex items-center justify-between hover:border-brand-300"
             >
               <span className="flex items-center gap-2 text-app font-medium min-w-0">
                 <MapPin className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" />

@@ -16,7 +16,7 @@ export function FavoriteButton({ active, size = 20, onChange, label }: FavoriteB
         e.stopPropagation();
         onChange();
       }}
-      className="inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-app/5 transition-colors"
+      className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-1.5 radius-sm hover:bg-app/5 transition-colors"
       aria-pressed={active}
       aria-label={label ?? (active ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة')}
       title={active ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}

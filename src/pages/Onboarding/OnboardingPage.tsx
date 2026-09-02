@@ -76,13 +76,16 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <button
           type="button"
           onClick={finish}
-          className="text-sm text-muted hover:text-app"
+          className="text-sm text-muted hover:text-app min-h-[44px] px-3 flex items-center"
         >
           تخطّي
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-4 min-h-0">
+      <div
+        key={step}
+        className="flex-1 flex flex-col items-center justify-center text-center px-6 py-4 min-h-0 anim-fade-in"
+      >
         {isThemeStep ? (
           <>
             <div className="mb-6 text-brand-600 dark:text-brand-400">
@@ -101,7 +104,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
                     key={opt.value}
                     type="button"
                     onClick={() => selectTheme(opt.value)}
-                    className={`flex flex-col items-center gap-2 py-5 rounded-2xl border transition-colors ${
+                    className={`flex flex-col items-center gap-2 py-5 radius-lg border transition-colors ${
                       active
                         ? 'bg-brand-600 text-white border-brand-600'
                         : 'bg-surface text-app border-app hover:border-brand-400'
@@ -143,7 +146,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <button
           type="button"
           onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
-          className="w-full inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl text-base"
+          className="w-full inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 radius-md text-base"
         >
           {isLast ? 'ابدأ' : 'التالي'}
           <ArrowLeft className="w-5 h-5" />

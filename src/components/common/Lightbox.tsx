@@ -45,7 +45,7 @@ export function Lightbox({ open, imageId, alt, onClose }: LightboxProps) {
     <div
       ref={ref}
       tabIndex={-1}
-      className="fixed inset-0 z-[95] bg-black/90 flex items-center justify-center p-4 outline-none"
+      className="fixed inset-0 z-[95] bg-black/90 flex items-center justify-center p-4 outline-none backdrop-fade-in"
       onClick={onClose}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -56,11 +56,11 @@ export function Lightbox({ open, imageId, alt, onClose }: LightboxProps) {
       <ItemImage
         imageId={imageId}
         alt={alt}
-        className="max-w-full max-h-full object-contain rounded-lg"
+        className="max-w-full max-h-full object-contain radius-sm anim-scale-in"
       />
       <button
         type="button"
-        className="absolute top-4 left-4 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+        className="absolute top-4 left-4 text-white bg-white/10 hover:bg-white/20 rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center p-2 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           onClose();

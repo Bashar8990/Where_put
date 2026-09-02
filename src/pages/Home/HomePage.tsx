@@ -1,8 +1,14 @@
-import { PackageSearch, Plus, SlidersHorizontal } from 'lucide-react';
+import { Plus, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
+import {
+  FirstRunIllustration,
+  NoResultsIllustration,
+  AllHaveImagesIllustration,
+  NoCategoryMatchIllustration,
+} from '../../components/common/Illustrations';
 import { TopBar } from '../../components/common/TopBar';
 import { ItemCard } from '../../components/items/ItemCard';
 import { MoveItemSheet } from '../../components/items/MoveItemSheet';
@@ -23,12 +29,15 @@ import {
   toggleFavorite,
 } from '../../services/items/itemService';
 import { CATEGORY_LABELS, CATEGORY_ORDER, type ItemCategory, type StoredItem } from '../../types';
+import { haptic } from '../../utils/haptics';
+import { useBackupReminder } from '../../hooks/useBackupReminder';
 
 type FilterTab = 'all' | 'recent' | 'noImage';
 
 export function HomePage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  useBackupReminder();
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query, 180);
   const [tab, setTab] = useState<FilterTab>('all');
@@ -93,6 +102,7 @@ export function HomePage() {
     await toggleFavorite(id);
     await refresh();
     await runSearch();
+    haptic('light');
   }
 
   async function handleMoveDone() {
@@ -100,6 +110,7 @@ export function HomePage() {
     await refresh();
     await runSearch();
     showToast({ message: 'تم تحديث مكان الغرض' });
+    haptic('success');
   }
 
   async function handleDelete() {
@@ -109,6 +120,7 @@ export function HomePage() {
     await softDeleteItem(target.id);
     await refresh();
     await runSearch();
+    haptic('error');
     const toastId = showToast({
       message: `تم حذف "${target.name}"`,
       actionLabel: 'تراجع',
@@ -117,6 +129,7 @@ export function HomePage() {
         await refresh();
         await runSearch();
         showToast({ message: 'تمت الاستعادة' });
+        haptic('success');
       },
       duration: 6000,
     });
@@ -138,7 +151,7 @@ export function HomePage() {
           <button
             type="button"
             onClick={() => setShowFilters((v) => !v)}
-            className="p-2 rounded-lg text-app hover:bg-app/5"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 radius-sm text-app hover:bg-app/5"
             aria-label="فلاتر"
             aria-expanded={showFilters}
           >
@@ -163,7 +176,7 @@ export function HomePage() {
       </div>
 
       {showFilters && (
-        <div className="mt-3 bg-surface border border-app rounded-2xl p-3">
+        <div className="mt-3 bg-surface border border-app radius-lg elev-card p-3">
           <div className="text-sm font-semibold text-app mb-2">التصنيف</div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -196,7 +209,7 @@ export function HomePage() {
       )}
 
       <div
-        className={`mt-4 space-y-3 transition-opacity duration-150 ${
+        className={`mt-4 space-y-4 transition-opacity duration-150 ${
           refreshing ? 'opacity-60' : 'opacity-100'
         }`}
       >
@@ -205,7 +218,7 @@ export function HomePage() {
         ) : visibleItems.length === 0 ? (
           isSearching ? (
             <EmptyState
-              icon={<PackageSearch className="w-12 h-12" strokeWidth={1.5} />}
+              icon={<NoResultsIllustration />}
               title="لم نجد شيئًا بهذا الاسم"
               description={`لا توجد نتائج لبحثك "${debounced}".`}
               actionLabel="+ إضافة غرض جديد"
@@ -214,7 +227,7 @@ export function HomePage() {
           ) : hasAny === false ? (
             // Database is completely empty → first-run welcome state.
             <EmptyState
-              icon={<PackageSearch className="w-12 h-12" strokeWidth={1.5} />}
+              icon={<FirstRunIllustration />}
               title="لم تسجل أي شيء بعد"
               description="في المرة القادمة التي تضع فيها شيئًا مهمًا في مكان ما، سجّله هنا حتى تعرف أين تجده لاحقًا."
               actionLabel="+ أضف أول غرض"
@@ -228,24 +241,32 @@ export function HomePage() {
           ) : tab === 'noImage' ? (
             // DB has items but all have images.
             <EmptyState
+              icon={<AllHaveImagesIllustration />}
               title="كل الأغراض لها صور"
               description="ستظهر هنا الأغراض التي لم ترفق لها صورة عند الإضافة."
             />
           ) : (
-            // DB has items but the current category filter excludes them all.
-            <p className="text-center text-muted py-8 text-sm">
-              لا توجد عناصر في هذا التصنيف.
-            </p>
+            <EmptyState
+              icon={<NoCategoryMatchIllustration />}
+              title="لا توجد عناصر في هذا التصنيف"
+              description="جرّب تصنيفاً آخر أو أضف غرضاً جديداً في هذا التصنيف."
+            />
           )
         ) : (
-          visibleItems.map((item) => (
-            <ItemCard
+          visibleItems.map((item, i) => (
+            <div
               key={item.id}
-              item={item}
-              onToggleFavorite={handleToggleFavorite}
-              onMove={setMoveTarget}
-              onDelete={setDeleteTarget}
-            />
+              className="anim-card-enter"
+              style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}
+            >
+              <ItemCard
+                item={item}
+                onToggleFavorite={handleToggleFavorite}
+                onMove={setMoveTarget}
+                onDelete={setDeleteTarget}
+                highlight={isSearching ? debounced : undefined}
+              />
+            </div>
           ))
         )}
       </div>
