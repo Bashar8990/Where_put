@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { Lightbox } from '../../components/common/Lightbox';
 import { TopBar } from '../../components/common/TopBar';
 import { useToast } from '../../components/common/Toast';
 import { ItemImage } from '../../components/common/ItemImage';
@@ -220,29 +221,12 @@ export function ItemDetailsPage() {
         onCancel={() => setConfirmDelete(false)}
       />
 
-      {lightbox && item.imageId && (
-        <div
-          className="fixed inset-0 z-[95] bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightbox(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="عرض الصورة"
-        >
-          <ItemImage
-            imageId={item.imageId}
-            alt={item.name}
-            className="max-w-full max-h-full object-contain rounded-lg"
-          />
-          <button
-            type="button"
-            className="absolute top-4 left-4 text-white bg-white/10 rounded-full p-2"
-            onClick={() => setLightbox(false)}
-            aria-label="إغلاق"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      <Lightbox
+        open={lightbox}
+        imageId={item.imageId}
+        alt={item.name}
+        onClose={() => setLightbox(false)}
+      />
     </AppLayout>
   );
 }

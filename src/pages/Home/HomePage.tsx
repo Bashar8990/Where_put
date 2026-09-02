@@ -11,12 +11,12 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useToast } from '../../components/common/Toast';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import {
-  favoriteItems,
   recentItems,
   searchItems,
   type SearchFilters,
 } from '../../services/search/searchService';
 import {
+  countItems,
   purgeDeletedItems,
   restoreItem,
   softDeleteItem,
@@ -24,7 +24,7 @@ import {
 } from '../../services/items/itemService';
 import { CATEGORY_LABELS, CATEGORY_ORDER, type ItemCategory, type StoredItem } from '../../types';
 
-type FilterTab = 'all' | 'favorites' | 'recent' | 'noImage';
+type FilterTab = 'all' | 'recent' | 'noImage';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -36,41 +36,43 @@ export function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const [results, setResults] = useState<StoredItem[]>([]);
-  const [favorites, setFavorites] = useState<StoredItem[]>([]);
   const [recent, setRecent] = useState<StoredItem[]>([]);
+  // Single source of truth for "does the database have ANY items at all?"
+  //   null  = loading (not yet determined)
+  //   true  = database has at least one item
+  //   false = database is completely empty (first-run)
+  // This is NOT re-derived per-tab; it reflects total DB state only.
   const [hasAny, setHasAny] = useState<boolean | null>(null);
+  // `loading` = first-ever load (no data yet) → show full loading state.
+  // `refreshing` = subsequent background updates (tab/category/query changes)
+  //   → keep existing data visible, no flicker.
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [moveTarget, setMoveTarget] = useState<StoredItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StoredItem | null>(null);
 
   async function refresh() {
-    const [fav, rec] = await Promise.all([favoriteItems(), recentItems(8)]);
-    setFavorites(fav);
+    const [rec, total] = await Promise.all([recentItems(8), countItems()]);
     setRecent(rec);
-    setHasAny(rec.length > 0 || fav.length > 0 ? true : null);
+    setHasAny(total > 0);
   }
 
   async function runSearch() {
-    setLoading(true);
+    // Only the very first load shows a full loading state.
+    // All subsequent updates keep the existing data visible to avoid flicker.
+    if (!loading) setRefreshing(true);
     try {
       const filters: SearchFilters = {
-        favoritesOnly: tab === 'favorites',
         withoutImage: tab === 'noImage',
         recentlyUpdated: tab === 'recent' && !debounced,
         category,
       };
       const res = await searchItems(debounced, filters);
       setResults(res.map((r) => r.item));
-      if (!debounced) {
-        // For non-search views, derive hasAny from results.
-        if (tab === 'all') setHasAny(res.length > 0 ? true : null);
-        else if (tab === 'favorites') setHasAny(favorites.length > 0 ? true : null);
-        else if (tab === 'recent') setHasAny(recent.length > 0 ? true : null);
-        else if (tab === 'noImage') setHasAny(res.length > 0 ? true : null);
-      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
@@ -125,7 +127,7 @@ export function HomePage() {
     void toastId;
   }
 
-  const visibleItems = isSearching ? results : tab === 'favorites' ? favorites : tab === 'recent' ? recent : results;
+  const visibleItems = isSearching ? results : tab === 'recent' ? recent : results;
 
   return (
     <AppLayout>
@@ -151,9 +153,6 @@ export function HomePage() {
       <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
         <FilterChip active={tab === 'all'} onClick={() => setTab('all')}>
           الكل
-        </FilterChip>
-        <FilterChip active={tab === 'favorites'} onClick={() => setTab('favorites')}>
-          المفضلة
         </FilterChip>
         <FilterChip active={tab === 'recent'} onClick={() => setTab('recent')}>
           آخر تحديث
@@ -196,9 +195,13 @@ export function HomePage() {
         </div>
       )}
 
-      <div className="mt-4 space-y-3">
-        {loading && isSearching ? (
-          <p className="text-center text-muted py-8 text-sm">جارٍ البحث…</p>
+      <div
+        className={`mt-4 space-y-3 transition-opacity duration-150 ${
+          refreshing ? 'opacity-60' : 'opacity-100'
+        }`}
+      >
+        {loading ? (
+          <p className="text-center text-muted py-8 text-sm">جارٍ التحميل…</p>
         ) : visibleItems.length === 0 ? (
           isSearching ? (
             <EmptyState
@@ -209,6 +212,7 @@ export function HomePage() {
               onAction={() => navigate(`/add?name=${encodeURIComponent(debounced)}`)}
             />
           ) : hasAny === false ? (
+            // Database is completely empty → first-run welcome state.
             <EmptyState
               icon={<PackageSearch className="w-12 h-12" strokeWidth={1.5} />}
               title="لم تسجل أي شيء بعد"
@@ -221,13 +225,17 @@ export function HomePage() {
                 </div>
               }
             />
-          ) : tab === 'favorites' ? (
+          ) : tab === 'noImage' ? (
+            // DB has items but all have images.
             <EmptyState
-              title="لا توجد مفضلات"
-              description="أضف أغراضًا إلى المفضلة لتظهر هنا للوصول السريع."
+              title="كل الأغراض لها صور"
+              description="ستظهر هنا الأغراض التي لم ترفق لها صورة عند الإضافة."
             />
           ) : (
-            <p className="text-center text-muted py-8 text-sm">لا توجد عناصر مطابقة.</p>
+            // DB has items but the current category filter excludes them all.
+            <p className="text-center text-muted py-8 text-sm">
+              لا توجد عناصر في هذا التصنيف.
+            </p>
           )
         ) : (
           visibleItems.map((item) => (

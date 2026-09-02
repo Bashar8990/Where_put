@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
 export interface Toast {
@@ -88,11 +89,11 @@ function ToastViewport({
             )}
             <button
               type="button"
-              className="text-muted hover:text-app text-sm"
+              className="text-muted hover:text-app p-0.5 rounded-md"
               aria-label="إغلاق"
               onClick={() => onDismiss(t.id)}
             >
-              ✕
+              <X className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
         </div>

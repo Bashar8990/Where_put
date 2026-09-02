@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getSettings, updateSettings } from '../services/settings/settingsService';
 import type { AppSettings } from '../types';
 
-function applyTheme(theme: AppSettings['theme']) {
+export function applyTheme(theme: AppSettings['theme']) {
   const root = document.documentElement;
   const prefersDark =
     typeof window !== 'undefined' &&

@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -21,14 +22,8 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onCancel]);
+  // Focus trap + Escape + restore focus to the trigger element.
+  const ref = useFocusTrap(open, { onEscape: onCancel });
 
   if (!open) return null;
 
@@ -41,7 +36,9 @@ export function ConfirmDialog({
       onClick={onCancel}
     >
       <div
-        className="bg-surface text-app rounded-2xl shadow-xl max-w-sm w-full p-5 border border-app"
+        ref={ref}
+        tabIndex={-1}
+        className="bg-surface text-app rounded-2xl shadow-xl max-w-sm w-full p-5 border border-app outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="confirm-title" className="text-lg font-bold mb-2">
@@ -53,6 +50,10 @@ export function ConfirmDialog({
             type="button"
             className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
             onClick={onCancel}
+            // For destructive actions, focus the safe (cancel) button first so
+            // an accidental Enter/Space does not confirm the dangerous action.
+            // For non-destructive confirms, keep focus on the primary action.
+            data-autofocus={danger ? 'true' : undefined}
           >
             {cancelLabel}
           </button>
@@ -62,7 +63,7 @@ export function ConfirmDialog({
               danger ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-600 hover:bg-brand-700'
             }`}
             onClick={onConfirm}
-            autoFocus
+            data-autofocus={!danger ? 'true' : undefined}
           >
             {confirmLabel}
           </button>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { moveItem } from '../../services/items/itemService';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { StoredItem } from '../../types';
 import { LocationInput } from '../common/LocationInput';
 
@@ -14,6 +15,9 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
   const [location, setLocation] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Focus trap + Escape + restore focus to the trigger element.
+  const ref = useFocusTrap(open && !!item, { onEscape: onClose });
 
   useEffect(() => {
     if (open) {
@@ -53,7 +57,9 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
       aria-label="نقل الغرض"
     >
       <div
-        className="bg-surface text-app w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 border border-app shadow-xl safe-bottom"
+        ref={ref}
+        tabIndex={-1}
+        className="bg-surface text-app w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 border border-app shadow-xl safe-bottom outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 text-sm text-muted">تغيير المكان</div>

@@ -1,5 +1,5 @@
 import { MapPin, MoreVertical, Star } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORY_LABELS, type StoredItem } from '../../types';
 import { formatRelativeDate } from '../../utils/dates';
@@ -14,6 +14,21 @@ interface ItemCardProps {
 
 export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Close the menu on Escape and restore focus to the trigger button.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setMenuOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [menuOpen]);
 
   return (
     <div className="bg-surface border border-app rounded-2xl p-3 sm:p-4 hover:border-brand-300 transition-colors">
@@ -47,6 +62,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
             </Link>
             <div className="relative shrink-0">
               <button
+                ref={triggerRef}
                 type="button"
                 className="p-1.5 rounded-lg text-muted hover:text-app hover:bg-app/5"
                 aria-label="إجراءات"
@@ -58,10 +74,12 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
               </button>
               {menuOpen && (
                 <>
-                  <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
+                  {/* Overlay above FAB (z-40) and bottom nav (z-40) so clicks
+                       anywhere — including those — reliably close the menu. */}
+                  <div className="fixed inset-0 z-[60]" onClick={() => setMenuOpen(false)} />
                   <div
                     role="menu"
-                    className="absolute left-0 mt-1 z-30 bg-surface border border-app rounded-xl shadow-lg py-1 min-w-[140px]"
+                    className="absolute right-0 mt-1 z-[61] bg-surface border border-app rounded-xl shadow-lg py-1 min-w-[140px]"
                   >
                     <button
                       type="button"

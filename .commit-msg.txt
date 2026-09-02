@@ -1,1 +1,0 @@
-Re-enable native browser pull-to-refresh (remove overscroll-behavior-y: none)

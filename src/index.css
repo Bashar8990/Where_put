@@ -59,8 +59,10 @@
     -moz-osx-font-smoothing: grayscale;
     /* Allow native pull-to-refresh; block horizontal overscroll only */
     overscroll-behavior-x: none;
-    /* Prevent pinch-zoom and double-tap zoom to feel like a native app */
-    touch-action: pan-x pan-y;
+    /* Allow pinch-zoom (WCAG 1.4.4) while suppressing double-tap zoom for a
+       native-app feel. `manipulation` permits panning and pinching but
+       disables the double-tap-to-zoom gesture. */
+    touch-action: manipulation;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
