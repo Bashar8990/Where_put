@@ -1,21 +1,24 @@
-Fix memory leaks and races: delete dead useLiveQuery, fix object URL revoke, clean up timers
+Fix CI/CD and build: run lint+tests in CI, derive base from repo, add maskable icon, apple-touch-icon, relative favicon
 
 Five issues fixed:
 
-1. Deleted unused useLiveQuery hook (dead code, not used anywhere).
+1. CI did not run lint or tests before deploying — broken tests/lint could
+   be deployed to GitHub Pages. Added npm run lint and npm run test steps
+   before the build step in deploy.yml.
 
-2. Object URL revoke race in ItemImage and ImagePicker: the cleanup was
-   revoking the previous URL before the new image finished loading, causing
-   a brief broken-image flicker. Now the previous URL is revoked only after
-   the new one is committed to state via a ref.
+2. base path was hard-coded to '/Where_put/' — renaming the repo would
+   break deployment. Now derived from GITHUB_REPOSITORY env var (set
+   automatically by GitHub Actions), with BASE_PATH fallback for custom
+   hosting.
 
-3. setInterval leak in PWAUpdatePrompt: the SW update interval was never
-   saved or cleared, causing accumulation on re-register and a leak on
-   unmount. Now tracked via useRef and cleared on unmount.
+3. includeAssets was missing icons/icon-maskable-512.png, which is
+   referenced in the manifest but not pre-cached by the service worker.
+   Now included.
 
-4. setTimeout for purge not cleared in HomePage, ItemDetailsPage, and
-   FavoritesPage: could fire after unmount. Now tracked via useRef and
-   cleared on unmount.
+4. index.html had no Apple Touch Icon — iOS "Add to Home Screen" used a
+   generic screenshot. Added <link rel="apple-touch-icon"> pointing to
+   icon-192.png.
 
-5. Touch listeners in main.tsx: already removed by a prior commit
-   (gesturestart/change/end and touchend handlers are gone).
+5. favicon.svg used an absolute path (/favicon.svg) which Vite may not
+   rewrite under a non-root base. Changed to relative (favicon.svg) so it
+   works correctly under /Where_put/ on GitHub Pages.

@@ -5,9 +5,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import pkg from './package.json' with { type: 'json' }
 
-// For GitHub Pages project sites, set base to the repo name.
+// For GitHub Pages project sites, derive base from the repo name.
 // Falls back to '/' for local dev and other hosting (Netlify, Cloudflare, etc.)
-const base = process.env.GITHUB_ACTIONS ? '/Where_put/' : '/'
+// Override with BASE_PATH env var if needed.
+const base = process.env.GITHUB_ACTIONS
+  ? `/${process.env.GITHUB_REPOSITORY?.split('/')?.[1] ?? 'Where_put'}/`
+  : process.env.BASE_PATH ?? '/'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -22,7 +25,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png'],
+      includeAssets: ['favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'],
       manifest: {
         name: 'وين حطيته؟',
         short_name: 'وين؟',
