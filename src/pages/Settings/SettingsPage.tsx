@@ -471,15 +471,14 @@ export function SettingsPage() {
 
       {/* Contact developer */}
       <Section title="تواصل مع المطور" icon={<MessageCircle className="w-4 h-4" />}>
-        <a
-          href="https://wa.me/963953812362"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => window.open('https://wa.me/963953812362', '_blank', 'noopener,noreferrer')}
           className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 radius-md px-4 py-3 hover:bg-green-100 dark:hover:bg-green-950/50"
         >
           <WhatsAppIcon className="w-5 h-5" />
           <span className="text-sm font-medium">تواصل عبر واتساب</span>
-        </a>
+        </button>
       </Section>
 
       {/* Danger */}
