@@ -22,6 +22,14 @@ export function useFocusTrap(
 ): RefObject<HTMLDivElement | null> {
   const ref = useRef<HTMLDivElement | null>(null);
   const previouslyFocused = useRef<Element | null>(null);
+  // Keep the latest onEscape in a ref so the effect doesn't re-run (and
+  // re-focus the first element) when the parent re-renders with a new
+  // inline callback. Re-running the effect on every keystroke would steal
+  // focus from the currently-focused input, closing the mobile keyboard.
+  const onEscapeRef = useRef(onEscape);
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  });
 
   useEffect(() => {
     if (!active) return;
@@ -42,7 +50,7 @@ export function useFocusTrap(
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onEscape?.();
+        onEscapeRef.current?.();
         return;
       }
       if (e.key !== 'Tab') return;
@@ -79,7 +87,8 @@ export function useFocusTrap(
         prev.focus();
       }
     };
-  }, [active, onEscape]);
+    // Only re-run when `active` toggles — NOT when onEscape changes identity.
+  }, [active]);
 
   return ref;
 }
