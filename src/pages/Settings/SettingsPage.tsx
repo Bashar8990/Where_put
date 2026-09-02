@@ -1,4 +1,4 @@
-import { Database, Download, Fingerprint, Info, Lock, MessageCircle, Moon, Shield, Sun, Trash2, Upload, Monitor } from 'lucide-react';
+import { Database, Download, Fingerprint, Info, Lock, MessageCircle, Moon, RefreshCw, Shield, Sun, Trash2, Upload, Monitor } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
@@ -27,6 +27,7 @@ import { getStorageEstimate } from '../../services/storage/storageService';
 import { formatBytes } from '../../utils/images';
 import { formatFullDate } from '../../utils/dates';
 import { haptic } from '../../utils/haptics';
+import { checkForUpdate } from '../../services/pwa/swUpdate';
 import {
   changePassword,
   disableBiometric,
@@ -50,6 +51,7 @@ export function SettingsPage() {
   const [restoreMode, setRestoreMode] = useState<RestoreMode>('merge');
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Lock state ───────────────────────────────────────────────────
@@ -252,6 +254,26 @@ export function SettingsPage() {
     }
   }
 
+  async function handleCheckUpdate() {
+    setCheckingUpdate(true);
+    try {
+      const found = await checkForUpdate();
+      if (found) {
+        // The PWAUpdatePrompt toast will appear automatically with the
+        // "تحديث الآن" button — no need to show a duplicate toast here.
+        showToast({ message: 'يتوفر تحديث جديد — اضغط على الإشعار للتحديث.' });
+        haptic('success');
+      } else {
+        showToast({ message: 'أنت تستخدم أحدث إصدار' });
+        haptic('light');
+      }
+    } catch {
+      showToast({ message: 'تعذّر التحقق من التحديثات.' });
+    } finally {
+      setCheckingUpdate(false);
+    }
+  }
+
   return (
     <AppLayout>
       <TopBar title="الإعدادات" showBack backTo="/" />
@@ -415,6 +437,17 @@ export function SettingsPage() {
       <Section title="حول التطبيق" icon={<Info className="w-4 h-4" />}>
         <Row label="الإصدار" value={__APP_VERSION__} />
         <Row label="تاريخ آخر تحديث" value={formatFullDate(__BUILD_DATE__)} />
+        <button
+          type="button"
+          onClick={handleCheckUpdate}
+          disabled={checkingUpdate}
+          className="w-full flex items-center gap-3 bg-surface-muted border border-app radius-md px-4 py-3 hover:border-brand-400 disabled:opacity-50 mt-2"
+        >
+          <RefreshCw className={`w-5 h-5 text-brand-600 dark:text-brand-400 ${checkingUpdate ? 'animate-spin' : ''}`} />
+          <span className="text-sm font-medium">
+            {checkingUpdate ? 'جارٍ التحقق…' : 'تحقق من التحديثات'}
+          </span>
+        </button>
         <p className="text-xs text-muted leading-relaxed pt-2">
           «وين حطيته؟» تطبيق عربي بسيط يساعدك على تذكّر أين وضعت أشياءك المهمة.
           كل بياناتك تبقى على جهازك فقط — لا خوادم، لا حسابات، لا تتبّع.

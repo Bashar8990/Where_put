@@ -190,7 +190,7 @@ export function HomePage() {
           الكل
         </FilterChip>
         <FilterChip active={tab === 'recent'} onClick={() => setTab('recent')}>
-          آخر تحديث
+          المضاف مؤخراً
         </FilterChip>
         <FilterChip active={tab === 'noImage'} onClick={() => setTab('noImage')}>
           بدون صورة

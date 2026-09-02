@@ -99,6 +99,25 @@
     border-color: var(--border);
   }
 
+  /* Native-app feel: prevent text selection on taps throughout the UI.
+     Inputs, textareas, and contenteditable keep selection enabled so users
+     can still edit/type normally. */
+  body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  textarea,
+  select,
+  [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
+  }
+
   button {
     font-family: inherit;
   }

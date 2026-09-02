@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToast } from './Toast';
+import { setSWRegistration } from '../../services/pwa/swUpdate';
 
 export function PWAUpdatePrompt() {
   // Track the SW update interval so we can clear it on unmount or re-register.
@@ -12,6 +13,9 @@ export function PWAUpdatePrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
+      // Store the registration so other parts of the app can trigger
+      // a manual update check (e.g. Settings → "Check for updates").
+      setSWRegistration(registration);
       // Clear any previous interval before setting a new one (prevents accumulation).
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
