@@ -182,7 +182,7 @@ export function HomePage() {
         }
       />
 
-      <SearchBar value={query} onChange={setQuery} autoFocus={!hasAny} />
+      <SearchBar value={query} onChange={setQuery} />
 
       {/* Filter tabs */}
       <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
