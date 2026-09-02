@@ -15,9 +15,23 @@ export interface SearchResult {
   score: number;
 }
 
-/** Score a single item against normalized query tokens. Higher = better. */
+/** Score a single item against normalized query tokens. Higher = better.
+ * Uses the precomputed `searchText` for fast initial filtering, then
+ * re-normalizes individual fields only for ranking precision. */
 function scoreItem(item: StoredItem, queryNorm: string, queryTokens: string[]): number {
   if (!queryNorm) return 0;
+
+  // Fast path: use precomputed searchText for initial containment check.
+  // searchText already includes name + location + notes + category label + category key.
+  const st = item.searchText ?? '';
+  if (!st.includes(queryNorm)) {
+    // If the full query isn't in the precomputed text, check token-level matches.
+    if (queryTokens.length <= 1) return 0;
+    const anyToken = queryTokens.some((tok) => tok && st.includes(tok));
+    if (!anyToken) return 0;
+  }
+
+  // Ranking: normalize individual fields for precise scoring.
   const nameNorm = normalizeArabicText(item.name);
   const locNorm = normalizeArabicText(item.location);
   const notesNorm = normalizeArabicText(item.notes);
@@ -36,8 +50,10 @@ function scoreItem(item: StoredItem, queryNorm: string, queryTokens: string[]): 
   if (locNorm.includes(queryNorm)) score += 200;
   // Full query in notes
   if (notesNorm.includes(queryNorm)) score += 120;
-  // Full query in category
+  // Full query in category label
   if (catNorm && catNorm.includes(queryNorm)) score += 80;
+  // Full query in category key (e.g. "documents") — enabled via searchText
+  if (item.category && item.category.includes(queryNorm)) score += 60;
 
   // Per-token matching (for multi-word queries)
   if (queryTokens.length > 1) {
@@ -48,6 +64,7 @@ function scoreItem(item: StoredItem, queryNorm: string, queryTokens: string[]): 
       else if (locNorm.includes(tok)) tokenHits += 2;
       else if (notesNorm.includes(tok)) tokenHits += 1;
       else if (catNorm.includes(tok)) tokenHits += 1;
+      else if (item.category && item.category.includes(tok)) tokenHits += 1;
     }
     score += tokenHits * 40;
   }

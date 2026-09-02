@@ -14,8 +14,9 @@ import { LocationsPage } from './pages/Locations/LocationsPage';
 import { OnboardingPage } from './pages/Onboarding/OnboardingPage';
 import { PrivacyPage } from './pages/Privacy/PrivacyPage';
 import { SettingsPage } from './pages/Settings/SettingsPage';
-import { getSettings } from './services/settings/settingsService';
+import { getSettings, updateSettings } from './services/settings/settingsService';
 import { countItems } from './services/items/itemService';
+import { requestPersistentStorage } from './services/storage/storageService';
 
 export default function App() {
   return (
@@ -43,6 +44,14 @@ function AppRoutes() {
         return;
       }
       setBootState('ready');
+      // Silently request persistent storage to protect user data from
+      // automatic eviction. The browser decides whether to grant it;
+      // no user prompt is shown. Safe to call on every load.
+      if (!s.persistRequested) {
+        void requestPersistentStorage().then(() => {
+          void updateSettings({ persistRequested: true });
+        });
+      }
     })();
     return () => {
       active = false;

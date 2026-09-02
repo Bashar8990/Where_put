@@ -23,10 +23,7 @@ import {
 } from '../../services/items/itemService';
 import { getImageStats } from '../../services/images/imageService';
 import { getSettings, updateSettings } from '../../services/settings/settingsService';
-import {
-  getStorageEstimate,
-  requestPersistentStorage,
-} from '../../services/storage/storageService';
+import { getStorageEstimate } from '../../services/storage/storageService';
 import { formatBytes } from '../../utils/images';
 import { formatFullDate } from '../../utils/dates';
 import { haptic } from '../../utils/haptics';
@@ -144,17 +141,6 @@ export function SettingsPage() {
     }
   }
 
-  async function handlePersist() {
-    const granted = await requestPersistentStorage();
-    if (granted) {
-      await updateSettings({ persistRequested: true });
-      showToast({ message: 'تم طلب تخزين دائم للبيانات' });
-      await refresh();
-    } else {
-      showToast({ message: 'المتصفح لم يمنح تخزينًا دائمًا.' });
-    }
-  }
-
   return (
     <AppLayout>
       <TopBar title="الإعدادات" showBack backTo="/" />
@@ -203,15 +189,6 @@ export function SettingsPage() {
         )}
         {storage.persisted != null && (
           <Row label="تخزين دائم" value={storage.persisted ? 'مفعّل' : 'غير مفعّل'} />
-        )}
-        {storage.persisted === false && (
-          <button
-            type="button"
-            onClick={handlePersist}
-            className="mt-2 text-sm text-brand-600 dark:text-brand-400 hover:underline"
-          >
-            اطلب تخزينًا دائمًا للبيانات
-          </button>
         )}
       </Section>
 

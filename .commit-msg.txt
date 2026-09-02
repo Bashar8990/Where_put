@@ -1,0 +1,8 @@
+Use precomputed searchText for fast search filtering + enable category key search
+
+searchService was re-normalizing name/location/notes/category on every search
+and ignoring the precomputed searchText field stored in IndexedDB. Now:
+- Use item.searchText for fast initial containment check before scoring
+- Enable searching by category key (e.g. "documents") via searchText
+- Re-normalize individual fields only for ranking precision
+- Reduces redundant normalization CPU work per search
