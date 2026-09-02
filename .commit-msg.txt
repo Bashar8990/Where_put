@@ -1,8 +1,16 @@
-Fix undo from ItemDetailsPage: stay on page during undo window instead of navigating away
+Fix data integrity: atomic updateItem, validate empty name/location, atomic toggleFavorite
 
-The delete flow was navigating to home immediately, but the undo toast
-callback called load() on the unmounted ItemDetailsPage, so the restored
-item never appeared in HomePage. Now:
-- Show a "deleted" state on the details page during the 7s undo window
-- Undo callback safely calls load() on the still-mounted component
-- Navigate to home only after the undo window expires
+Three issues fixed in itemService.ts:
+
+1. updateItem double-write + stale searchText: was writing the item twice
+   when changing image (first without searchText, then with). Now does a
+   single put with correct searchText. Transaction also includes db.images
+   so image cleanup is atomic.
+
+2. updateItem accepted empty name/location: createItem rejected empty
+   values but updateItem silently allowed name=''. Now validates and throws
+   for empty name/location after trim.
+
+3. toggleFavorite race condition: was read-then-write without a transaction,
+   so two rapid taps could leave the wrong state. Now uses an atomic
+   read-modify-write inside a Dexie transaction.

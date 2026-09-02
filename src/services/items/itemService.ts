@@ -68,13 +68,18 @@ export async function listAllItems(): Promise<StoredItem[]> {
 
 export async function updateItem(id: string, patch: UpdateItemInput): Promise<StoredItem> {
   const db = getDb();
-  return db.transaction('rw', db.items, async () => {
+  // Include db.images in the transaction so image cleanup is atomic with the item update.
+  return db.transaction('rw', db.items, db.images, async () => {
     const existing = await db.items.get(id);
     if (!existing || existing.deletedAt) throw new Error('الغرض غير موجود.');
 
     const next: StoredItem = { ...existing };
 
-    if (patch.name !== undefined) next.name = patch.name.trim();
+    if (patch.name !== undefined) {
+      const name = patch.name.trim();
+      if (!name) throw new Error('اسم الغرض مطلوب.');
+      next.name = name;
+    }
     if (patch.notes !== undefined) next.notes = patch.notes.trim();
     if (patch.category !== undefined) next.category = patch.category;
     if (patch.isFavorite !== undefined) next.isFavorite = patch.isFavorite;
@@ -82,7 +87,8 @@ export async function updateItem(id: string, patch: UpdateItemInput): Promise<St
     // Handle location change → push old location to history.
     if (patch.location !== undefined) {
       const newLocation = patch.location.trim();
-      if (newLocation && newLocation !== existing.location) {
+      if (!newLocation) throw new Error('المكان مطلوب.');
+      if (newLocation !== existing.location) {
         const entry: LocationHistoryEntry = {
           id: uuid(),
           location: existing.location,
@@ -99,16 +105,11 @@ export async function updateItem(id: string, patch: UpdateItemInput): Promise<St
       const oldImageId = existing.imageId;
       next.imageId = patch.imageId;
       if (oldImageId) {
-        // Defer cleanup until after put succeeds.
-        await db.items.put({ ...next, updatedAt: nowIso() });
-        next.updatedAt = (await db.items.get(id))!.updatedAt;
         await deleteImageIfUnused(oldImageId);
-        next.searchText = buildSearchText(next);
-        await db.items.put(next);
-        return next;
       }
     }
 
+    // Single write with updated searchText + timestamp.
     next.updatedAt = nowIso();
     next.searchText = buildSearchText(next);
     await db.items.put(next);
@@ -124,9 +125,21 @@ export async function moveItem(id: string, newLocation: string): Promise<StoredI
 }
 
 export async function toggleFavorite(id: string): Promise<StoredItem> {
-  const existing = await getItem(id);
-  if (!existing) throw new Error('الغرض غير موجود.');
-  return updateItem(id, { isFavorite: !existing.isFavorite });
+  const db = getDb();
+  // Atomic read-modify-write inside a transaction to prevent race conditions
+  // when the user taps the favorite button rapidly.
+  return db.transaction('rw', db.items, async () => {
+    const existing = await db.items.get(id);
+    if (!existing || existing.deletedAt) throw new Error('الغرض غير موجود.');
+    const next: StoredItem = {
+      ...existing,
+      isFavorite: !existing.isFavorite,
+      updatedAt: nowIso(),
+    };
+    next.searchText = buildSearchText(next);
+    await db.items.put(next);
+    return next;
+  });
 }
 
 /** Soft-delete: mark deletedAt, keep recoverable for undo. */
