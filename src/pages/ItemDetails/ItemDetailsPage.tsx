@@ -1,5 +1,5 @@
 import { MapPin, Pencil, Trash2, MoveRight, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -33,10 +33,14 @@ export function ItemDetailsPage() {
   // "deleted" state with an undo toast. We stay on this page (instead of
   // navigating away immediately) so the undo callback can safely call load().
   const [justDeleted, setJustDeleted] = useState(false);
+  // Active flag to prevent stale load() results from overwriting newer state.
+  const loadSeq = useRef(0);
 
   async function load() {
     if (!id) return;
+    const seq = ++loadSeq.current;
     const it = await getItem(id);
+    if (seq !== loadSeq.current) return; // stale
     setItem(it ?? null);
   }
 

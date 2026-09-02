@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { TopBar } from '../../components/common/TopBar';
@@ -14,10 +14,16 @@ export function EditItemPage() {
   const { showToast } = useToast();
   const [item, setItem] = useState<StoredItem | null | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
+  // Active flag to prevent stale fetch results from overwriting newer state.
+  const loadSeq = useRef(0);
 
   useEffect(() => {
     if (!id) return;
-    getItem(id).then((it) => setItem(it ?? null));
+    const seq = ++loadSeq.current;
+    getItem(id).then((it) => {
+      if (seq !== loadSeq.current) return; // stale
+      setItem(it ?? null);
+    });
   }, [id]);
 
   if (item === undefined) {

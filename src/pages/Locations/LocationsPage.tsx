@@ -1,5 +1,5 @@
 import { MapPin, Search, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -23,13 +23,28 @@ export function LocationsPage() {
   const [items, setItems] = useState<StoredItem[]>([]);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortMode>('usage');
+  // Active flags to prevent stale results from overwriting newer state.
+  const locSeq = useRef(0);
+  const itemsSeq = useRef(0);
 
   useEffect(() => {
-    listLocations().then(setLocations);
+    const seq = ++locSeq.current;
+    listLocations().then((locs) => {
+      if (seq !== locSeq.current) return; // stale
+      setLocations(locs);
+    });
   }, []);
 
   useEffect(() => {
-    if (selected) itemsAtLocation(selected).then(setItems);
+    if (!selected) {
+      setItems([]);
+      return;
+    }
+    const seq = ++itemsSeq.current;
+    itemsAtLocation(selected).then((res) => {
+      if (seq !== itemsSeq.current) return; // stale
+      setItems(res);
+    });
   }, [selected]);
 
   // Filter + sort locations client-side. listLocations already returns

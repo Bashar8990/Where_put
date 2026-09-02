@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
 import { NoFavoritesIllustration } from '../../components/common/Illustrations';
@@ -23,9 +23,14 @@ export function FavoritesPage() {
   const [items, setItems] = useState<StoredItem[]>([]);
   const [moveTarget, setMoveTarget] = useState<StoredItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StoredItem | null>(null);
+  // Active flag to prevent stale load() results from overwriting newer state.
+  const loadSeq = useRef(0);
 
   async function load() {
-    setItems(await favoriteItems());
+    const seq = ++loadSeq.current;
+    const favs = await favoriteItems();
+    if (seq !== loadSeq.current) return; // stale
+    setItems(favs);
   }
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { Plus, SlidersHorizontal } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -61,13 +61,20 @@ export function HomePage() {
   const [moveTarget, setMoveTarget] = useState<StoredItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StoredItem | null>(null);
 
+  // Active flags to prevent stale async results from overwriting newer state.
+  const refreshSeq = useRef(0);
+  const searchSeq = useRef(0);
+
   async function refresh() {
+    const seq = ++refreshSeq.current;
     const [rec, total] = await Promise.all([recentItems(8), countItems()]);
+    if (seq !== refreshSeq.current) return; // stale
     setRecent(rec);
     setHasAny(total > 0);
   }
 
   async function runSearch() {
+    const seq = ++searchSeq.current;
     // Only the very first load shows a full loading state.
     // All subsequent updates keep the existing data visible to avoid flicker.
     if (!loading) setRefreshing(true);
@@ -78,10 +85,13 @@ export function HomePage() {
         category,
       };
       const res = await searchItems(debounced, filters);
+      if (seq !== searchSeq.current) return; // stale
       setResults(res.map((r) => r.item));
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (seq === searchSeq.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }
 

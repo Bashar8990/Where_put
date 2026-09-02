@@ -1,8 +1,16 @@
-Prevent double-submit in AddItemPage, EditItemPage, and MoveItemSheet
+Fix race conditions: add active flags to all async load() calls
 
-Rapid double-tap on the submit button or pressing Enter while a save
-was in-flight could create duplicate items or trigger duplicate moves.
+All five pages (HomePage, ItemDetailsPage, EditItemPage, LocationsPage,
+FavoritesPage) called async load/fetch functions without guarding against
+stale results. If the user navigated or changed filters quickly, an older
+result could overwrite the newer state.
 
-- AddItemPage: manage submitting state, pass to ItemForm, reset on error
-- EditItemPage: same submitting guard
-- MoveItemSheet: early return if busy at the top of submit()
+Each page now uses a sequence counter (useRef) that increments on every
+async call. After the await resolves, if the counter has advanced (a newer
+call started), the stale result is discarded.
+
+- HomePage: separate flags for refresh() and runSearch()
+- ItemDetailsPage: flag on load()
+- EditItemPage: flag on getItem() fetch
+- LocationsPage: separate flags for listLocations() and itemsAtLocation()
+- FavoritesPage: flag on load()
