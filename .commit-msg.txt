@@ -1,16 +1,21 @@
-Fix race conditions: add active flags to all async load() calls
+Fix memory leaks and races: delete dead useLiveQuery, fix object URL revoke, clean up timers
 
-All five pages (HomePage, ItemDetailsPage, EditItemPage, LocationsPage,
-FavoritesPage) called async load/fetch functions without guarding against
-stale results. If the user navigated or changed filters quickly, an older
-result could overwrite the newer state.
+Five issues fixed:
 
-Each page now uses a sequence counter (useRef) that increments on every
-async call. After the await resolves, if the counter has advanced (a newer
-call started), the stale result is discarded.
+1. Deleted unused useLiveQuery hook (dead code, not used anywhere).
 
-- HomePage: separate flags for refresh() and runSearch()
-- ItemDetailsPage: flag on load()
-- EditItemPage: flag on getItem() fetch
-- LocationsPage: separate flags for listLocations() and itemsAtLocation()
-- FavoritesPage: flag on load()
+2. Object URL revoke race in ItemImage and ImagePicker: the cleanup was
+   revoking the previous URL before the new image finished loading, causing
+   a brief broken-image flicker. Now the previous URL is revoked only after
+   the new one is committed to state via a ref.
+
+3. setInterval leak in PWAUpdatePrompt: the SW update interval was never
+   saved or cleared, causing accumulation on re-register and a leak on
+   unmount. Now tracked via useRef and cleared on unmount.
+
+4. setTimeout for purge not cleared in HomePage, ItemDetailsPage, and
+   FavoritesPage: could fire after unmount. Now tracked via useRef and
+   cleared on unmount.
+
+5. Touch listeners in main.tsx: already removed by a prior commit
+   (gesturestart/change/end and touchend handlers are gone).

@@ -35,6 +35,8 @@ export function ItemDetailsPage() {
   const [justDeleted, setJustDeleted] = useState(false);
   // Active flag to prevent stale load() results from overwriting newer state.
   const loadSeq = useRef(0);
+  // Track the purge timeout so it can be cleared on unmount.
+  const purgeTimerRef = useRef<number | null>(null);
 
   async function load() {
     if (!id) return;
@@ -48,6 +50,16 @@ export function ItemDetailsPage() {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Clear the purge timeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (purgeTimerRef.current !== null) {
+        clearTimeout(purgeTimerRef.current);
+        purgeTimerRef.current = null;
+      }
+    };
+  }, []);
 
   if (item === undefined) {
     return (
@@ -117,8 +129,9 @@ export function ItemDetailsPage() {
       duration: 6000,
     });
     // After the undo window, purge and navigate to home.
-    window.setTimeout(async () => {
+    purgeTimerRef.current = window.setTimeout(async () => {
       await purgeDeletedItems();
+      purgeTimerRef.current = null;
       navigate('/', { replace: true });
     }, 7000);
     void toastId;

@@ -25,6 +25,8 @@ export function FavoritesPage() {
   const [deleteTarget, setDeleteTarget] = useState<StoredItem | null>(null);
   // Active flag to prevent stale load() results from overwriting newer state.
   const loadSeq = useRef(0);
+  // Track the purge timeout so it can be cleared on unmount.
+  const purgeTimerRef = useRef<number | null>(null);
 
   async function load() {
     const seq = ++loadSeq.current;
@@ -35,6 +37,16 @@ export function FavoritesPage() {
 
   useEffect(() => {
     void load();
+  }, []);
+
+  // Clear the purge timeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (purgeTimerRef.current !== null) {
+        clearTimeout(purgeTimerRef.current);
+        purgeTimerRef.current = null;
+      }
+    };
   }, []);
 
   async function handleToggleFavorite(id: string) {
@@ -68,8 +80,9 @@ export function FavoritesPage() {
       },
       duration: 6000,
     });
-    window.setTimeout(async () => {
+    purgeTimerRef.current = window.setTimeout(async () => {
       await purgeDeletedItems();
+      purgeTimerRef.current = null;
     }, 7000);
   }
 

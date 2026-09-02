@@ -1,22 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToast } from './Toast';
 
 export function PWAUpdatePrompt() {
+  // Track the SW update interval so we can clear it on unmount or re-register.
+  const intervalRef = useRef<number | null>(null);
+
   const {
     needRefresh: [needRefresh],
     offlineReady: [offlineReady, setOfflineReady],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
-      // Check for updates periodically.
+      // Clear any previous interval before setting a new one (prevents accumulation).
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+      }
       if (registration) {
-        setInterval(() => {
+        intervalRef.current = window.setInterval(() => {
           void registration.update();
         }, 60 * 60 * 1000);
       }
     },
   });
+
+  // Clear the interval on unmount.
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
 
   const { showToast } = useToast();
   const [refreshToastId, setRefreshToastId] = useState<number | null>(null);

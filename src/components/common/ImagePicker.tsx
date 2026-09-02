@@ -17,8 +17,10 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
   const [busy, setBusy] = useState(false);
 
   // Load preview when imageId changes.
+  // Revoke the previous URL only after the new one is committed to state,
+  // avoiding a brief broken-image flicker when imageId changes.
+  const currentUrlRef = useRef<string | null>(null);
   useEffect(() => {
-    let url: string | null = null;
     let active = true;
     (async () => {
       if (!imageId) {
@@ -28,15 +30,21 @@ export function ImagePicker({ imageId, onImageChange }: ImagePickerProps) {
       const img = await getImage(imageId);
       if (!active) return;
       if (img) {
-        url = URL.createObjectURL(img.blob);
-        setPreviewUrl(url);
+        const newUrl = URL.createObjectURL(img.blob);
+        const prev = currentUrlRef.current;
+        currentUrlRef.current = newUrl;
+        setPreviewUrl(newUrl);
+        if (prev) URL.revokeObjectURL(prev);
       } else {
         setPreviewUrl(null);
       }
     })();
     return () => {
       active = false;
-      if (url) URL.revokeObjectURL(url);
+      if (currentUrlRef.current) {
+        URL.revokeObjectURL(currentUrlRef.current);
+        currentUrlRef.current = null;
+      }
     };
   }, [imageId]);
 

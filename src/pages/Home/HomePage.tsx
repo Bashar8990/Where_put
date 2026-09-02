@@ -64,6 +64,17 @@ export function HomePage() {
   // Active flags to prevent stale async results from overwriting newer state.
   const refreshSeq = useRef(0);
   const searchSeq = useRef(0);
+  // Track the purge timeout so it can be cleared on unmount.
+  const purgeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (purgeTimerRef.current !== null) {
+        clearTimeout(purgeTimerRef.current);
+        purgeTimerRef.current = null;
+      }
+    };
+  }, []);
 
   async function refresh() {
     const seq = ++refreshSeq.current;
@@ -144,8 +155,9 @@ export function HomePage() {
       duration: 6000,
     });
     // After undo window, purge.
-    window.setTimeout(async () => {
+    purgeTimerRef.current = window.setTimeout(async () => {
       await purgeDeletedItems();
+      purgeTimerRef.current = null;
     }, 7000);
     void toastId;
   }
