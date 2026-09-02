@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useToast } from './Toast';
-import { setSWRegistration } from '../../services/pwa/swUpdate';
+import { setSWRegistration, setUpdateFn } from '../../services/pwa/swUpdate';
 
 export function PWAUpdatePrompt() {
   // Track the SW update interval so we can clear it on unmount or re-register.
@@ -27,6 +27,12 @@ export function PWAUpdatePrompt() {
       }
     },
   });
+
+  // Expose the update function so Settings → "Check for updates" can
+  // directly apply the update without relying on a separate toast.
+  useEffect(() => {
+    setUpdateFn(() => updateServiceWorker(true));
+  }, [updateServiceWorker]);
 
   // Clear the interval on unmount.
   useEffect(() => {

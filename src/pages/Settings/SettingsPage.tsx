@@ -27,7 +27,7 @@ import { getStorageEstimate } from '../../services/storage/storageService';
 import { formatBytes } from '../../utils/images';
 import { formatFullDate } from '../../utils/dates';
 import { haptic } from '../../utils/haptics';
-import { checkForUpdate } from '../../services/pwa/swUpdate';
+import { checkForUpdate, applyUpdate } from '../../services/pwa/swUpdate';
 import {
   changePassword,
   disableBiometric,
@@ -259,9 +259,14 @@ export function SettingsPage() {
     try {
       const found = await checkForUpdate();
       if (found) {
-        // The PWAUpdatePrompt toast will appear automatically with the
-        // "تحديث الآن" button — no need to show a duplicate toast here.
-        showToast({ message: 'يتوفر تحديث جديد — اضغط على الإشعار للتحديث.' });
+        showToast({
+          message: 'يتوفر تحديث جديد للتطبيق',
+          actionLabel: 'تحديث الآن',
+          onAction: () => {
+            void applyUpdate();
+          },
+          duration: 0,
+        });
         haptic('success');
       } else {
         showToast({ message: 'أنت تستخدم أحدث إصدار' });
@@ -385,28 +390,38 @@ export function SettingsPage() {
               تغيير كلمة السر
             </button>
 
-            {/* Biometric toggle — only show if device supports it */}
+            {/* Biometric — only show if device supports it */}
             {biometricSupported && (
-              <div className="flex items-center justify-between py-1">
-                <span className="flex items-center gap-2 text-sm text-app">
-                  <Fingerprint className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                  البصمة
-                </span>
+              <div className="mt-2 p-3 bg-surface-muted border border-app radius-md">
+                <div className="flex items-start gap-3">
+                  <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    biometricEnabled
+                      ? 'bg-brand-600/10 text-brand-600 dark:text-brand-400'
+                      : 'bg-app/5 text-muted'
+                  }`}>
+                    <Fingerprint className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-app">البصمة (Fingerprint)</p>
+                    <p className="text-xs text-muted leading-relaxed mt-0.5">
+                      {biometricEnabled
+                        ? 'مفعّلة — يمكنك فتح التطبيق بالبصمة بدل كلمة السر.'
+                        : 'استخدم بصمة إصبعك أو وجهك لفتح التطبيق بدل إدخال كلمة السر في كل مرة.'}
+                    </p>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={handleToggleBiometric}
                   disabled={busy}
-                  className={`relative w-12 h-7 radius-full transition-colors ${
-                    biometricEnabled ? 'bg-brand-600' : 'bg-app/20'
+                  className={`w-full mt-3 inline-flex items-center justify-center gap-2 py-2.5 radius-sm text-sm font-semibold transition-colors disabled:opacity-50 ${
+                    biometricEnabled
+                      ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50'
+                      : 'bg-brand-600 text-white hover:bg-brand-700'
                   }`}
-                  aria-pressed={biometricEnabled}
-                  aria-label="تبديل البصمة"
                 >
-                  <span
-                    className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${
-                      biometricEnabled ? 'left-0.5' : 'right-0.5'
-                    }`}
-                  />
+                  <Fingerprint className="w-4 h-4" />
+                  {biometricEnabled ? 'إيقاف البصمة' : 'تفعيل البصمة'}
                 </button>
               </div>
             )}

@@ -6,9 +6,15 @@
  */
 
 let registration: ServiceWorkerRegistration | undefined;
+// Stored callback to activate the waiting SW and reload (from useRegisterSW).
+let updateFn: (() => Promise<void>) | undefined;
 
 export function setSWRegistration(reg: ServiceWorkerRegistration | undefined) {
   registration = reg;
+}
+
+export function setUpdateFn(fn: (() => Promise<void>) | undefined) {
+  updateFn = fn;
 }
 
 /**
@@ -19,11 +25,25 @@ export async function checkForUpdate(): Promise<boolean> {
   if (!registration) return false;
   try {
     await registration.update();
-    // After update(), if a new SW is waiting, needRefresh will be triggered
-    // by the useRegisterSW hook in PWAUpdatePrompt. We can detect a waiting
-    // SW directly here for an immediate result.
     return !!registration.waiting;
   } catch {
     return false;
   }
+}
+
+/**
+ * Activate the waiting Service Worker and reload the page.
+ * Uses the updateServiceWorker callback from useRegisterSW when available,
+ * which handles the SW lifecycle (skipWaiting + clients.claim) correctly.
+ */
+export async function applyUpdate(): Promise<void> {
+  if (updateFn) {
+    await updateFn();
+    return;
+  }
+  // Fallback: tell the waiting SW to skip waiting, then reload.
+  if (registration?.waiting) {
+    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+  window.location.reload();
 }
