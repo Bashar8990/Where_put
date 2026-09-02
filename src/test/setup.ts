@@ -1,6 +1,17 @@
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
+import { webcrypto } from 'node:crypto';
 import { beforeEach } from 'vitest';
+
+// jsdom exposes crypto.getRandomValues but NOT crypto.subtle.
+// Polyfill subtle from Node's webcrypto so authService (SHA-256) tests
+// pass in CI (Node 20 on Ubuntu) where globalThis.crypto.subtle is absent.
+if (!globalThis.crypto?.subtle) {
+  Object.defineProperty(globalThis, 'crypto', {
+    value: webcrypto,
+    configurable: true,
+  });
+}
 
 beforeEach(async () => {
   // Reset the db singleton and clear all tables for a clean state.
