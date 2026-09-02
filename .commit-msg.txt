@@ -1,5 +1,7 @@
-Fix PWA 404 on install: use dynamic start_url/scope/icons based on base path
+Prevent pinch-zoom and double-tap zoom for native app feel
 
-When deployed to GitHub Pages project site (/Where_put/), the PWA manifest
-was using start_url='/' and scope='/' which pointed to the GitHub 404 page.
-Now all manifest paths are derived from the base config.
+- Add maximum-scale=1, user-scalable=no to viewport meta
+- Set touch-action: pan-x pan-y on body to block zoom gestures
+- Prevent iOS gesturestart/gesturechange/gestureend events
+- Prevent double-tap zoom via touchend timing check
+- Set input font-size to 16px to prevent iOS auto-zoom on focus
