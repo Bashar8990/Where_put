@@ -135,18 +135,18 @@ export function ItemForm({
         </p>
       )}
 
-      <div className="flex gap-2 pt-2 sticky bottom-0 bg-app pb-1">
+      <div className="flex gap-2 pt-2 sticky bottom-0 bg-app pb-2 safe-bottom -mx-4 px-4">
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 px-4 py-3 rounded-xl text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
+          className="flex-1 px-4 py-3.5 rounded-xl text-sm font-medium bg-surface-muted text-app border border-app hover:bg-app/5"
         >
           إلغاء
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="flex-[2] inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+          className="flex-[2] inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
           {submitLabel}

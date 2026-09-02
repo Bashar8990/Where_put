@@ -122,4 +122,13 @@
   .safe-top {
     padding-top: env(safe-area-inset-top);
   }
+  /* Dynamic viewport height with fallback for mobile browsers */
+  .min-h-dvh {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .h-dvh {
+    height: 100vh;
+    height: 100dvh;
+  }
 }

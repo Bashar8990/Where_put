@@ -45,8 +45,11 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const isLast = step === slides.length - 1;
 
   return (
-    <div className="min-h-screen bg-app text-app flex flex-col">
-      <div className="flex justify-end p-4">
+    <div
+      className="bg-app text-app flex flex-col"
+      style={{ minHeight: '100dvh' }}
+    >
+      <div className="flex justify-end p-4 safe-top">
         <button
           type="button"
           onClick={finish}
@@ -56,15 +59,17 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-4 min-h-0">
         <div className="mb-6 text-brand-600 dark:text-brand-400">
-          <Icon className="w-20 h-20" strokeWidth={1.2} />
+          <Icon className="w-16 h-16 sm:w-20 sm:h-20" strokeWidth={1.2} />
         </div>
-        <h1 className="text-2xl font-bold mb-3">{slide.title}</h1>
-        <p className="text-muted leading-relaxed max-w-sm">{slide.body}</p>
+        <h1 className="text-xl sm:text-2xl font-bold mb-3">{slide.title}</h1>
+        <p className="text-muted leading-relaxed max-w-sm text-sm sm:text-base">
+          {slide.body}
+        </p>
       </div>
 
-      <div className="flex items-center justify-center gap-2 pb-6">
+      <div className="flex items-center justify-center gap-2 pb-4">
         {slides.map((_, i) => (
           <span
             key={i}
@@ -75,11 +80,11 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         ))}
       </div>
 
-      <div className="p-6 safe-bottom">
+      <div className="p-4 pb-6 safe-bottom">
         <button
           type="button"
           onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
-          className="w-full inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl"
+          className="w-full inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3.5 rounded-xl text-base"
         >
           {isLast ? 'ابدأ' : 'التالي'}
           <ArrowLeft className="w-5 h-5" />
