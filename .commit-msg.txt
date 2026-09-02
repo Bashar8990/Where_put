@@ -1,16 +1,17 @@
-Fix data integrity: atomic updateItem, validate empty name/location, atomic toggleFavorite
+Fix data integrity: atomic purge, backup merge respects soft-deletes, validate imageId
 
-Three issues fixed in itemService.ts:
+Three issues fixed:
 
-1. updateItem double-write + stale searchText: was writing the item twice
-   when changing image (first without searchText, then with). Now does a
-   single put with correct searchText. Transaction also includes db.images
-   so image cleanup is atomic.
+1. purgeDeletedItems was not transactional: each item was deleted in a
+   separate operation, so a failure mid-loop left partial state. Now all
+   purges run inside a single transaction on db.items + db.images.
+   permanentlyDeleteItem is also wrapped in the same transaction scope.
 
-2. updateItem accepted empty name/location: createItem rejected empty
-   values but updateItem silently allowed name=''. Now validates and throws
-   for empty name/location after trim.
+2. Backup merge could resurrect soft-deleted items: the merge compared
+   only updatedAt, so an older non-deleted backup copy could overwrite a
+   newer locally-deleted copy. Now if the local copy is soft-deleted and
+   the incoming copy is not, the local deleted state is preserved.
 
-3. toggleFavorite race condition: was read-then-write without a transaction,
-   so two rapid taps could leave the wrong state. Now uses an atomic
-   read-modify-write inside a Dexie transaction.
+3. createItem accepted imageId without verifying the image exists in
+   db.images, allowing dangling references. Now validates and throws if
+   the referenced image is missing.

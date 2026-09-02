@@ -34,6 +34,13 @@ export async function createItem(input: NewItemInput): Promise<StoredItem> {
   if (!name) throw new Error('اسم الغرض مطلوب.');
   if (!location) throw new Error('المكان مطلوب.');
 
+  // Validate that the referenced image exists to prevent dangling references.
+  const imageId = input.imageId ?? null;
+  if (imageId) {
+    const img = await db.images.get(imageId);
+    if (!img) throw new Error('الصورة المحددة غير موجودة.');
+  }
+
   const ts = nowIso();
   const item: StoredItem = {
     id: uuid(),
@@ -42,7 +49,7 @@ export async function createItem(input: NewItemInput): Promise<StoredItem> {
     notes: (input.notes ?? '').trim(),
     category: input.category ?? null,
     isFavorite: input.isFavorite ?? false,
-    imageId: input.imageId ?? null,
+    imageId,
     createdAt: ts,
     updatedAt: ts,
     locationHistory: [],
@@ -157,20 +164,25 @@ export async function restoreItem(id: string): Promise<void> {
 /** Permanently delete an item and its image (if unused elsewhere). */
 export async function permanentlyDeleteItem(id: string): Promise<void> {
   const db = getDb();
-  const item = await db.items.get(id);
-  if (!item) return;
-  await db.items.delete(id);
-  if (item.imageId) await deleteImageIfUnused(item.imageId);
+  await db.transaction('rw', db.items, db.images, async () => {
+    const item = await db.items.get(id);
+    if (!item) return;
+    await db.items.delete(id);
+    if (item.imageId) await deleteImageIfUnused(item.imageId);
+  });
 }
 
-/** Permanently purge all soft-deleted items. */
+/** Permanently purge all soft-deleted items in a single atomic transaction. */
 export async function purgeDeletedItems(): Promise<void> {
   const db = getDb();
-  const all = await db.items.toArray();
-  const toPurge = all.filter((i) => i.deletedAt);
-  for (const item of toPurge) {
-    await permanentlyDeleteItem(item.id);
-  }
+  await db.transaction('rw', db.items, db.images, async () => {
+    const all = await db.items.toArray();
+    const toPurge = all.filter((i) => i.deletedAt);
+    for (const item of toPurge) {
+      await db.items.delete(item.id);
+      if (item.imageId) await deleteImageIfUnused(item.imageId);
+    }
+  });
 }
 
 export async function countItems(): Promise<number> {

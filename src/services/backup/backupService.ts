@@ -354,8 +354,17 @@ export async function restoreBackup(parsed: ParsedBackup, mode: RestoreMode): Pr
       if (!current) {
         await db.items.put(incoming);
       } else {
+        // Respect soft-deletion: if the local copy was soft-deleted and the
+        // incoming copy is not deleted, keep the local deleted state so we
+        // don't resurrect an item the user intentionally removed.
+        const locallyDeleted = !!current.deletedAt;
+        const incomingDeleted = !!incoming.deletedAt;
         const curTs = new Date(current.updatedAt).getTime();
         const incTs = new Date(incoming.updatedAt).getTime();
+        if (locallyDeleted && !incomingDeleted) {
+          // Keep local (deleted) state — user deleted this; don't resurrect.
+          continue;
+        }
         if (incTs >= curTs) {
           await db.items.put(incoming);
         }
