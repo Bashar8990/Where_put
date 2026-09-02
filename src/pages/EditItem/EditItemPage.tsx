@@ -13,6 +13,7 @@ export function EditItemPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [item, setItem] = useState<StoredItem | null | undefined>(undefined);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -39,17 +40,23 @@ export function EditItemPage() {
 
   async function handleSubmit(values: ItemFormValues) {
     if (!id) return;
-    await updateItem(id, {
-      name: values.name,
-      location: values.location,
-      notes: values.notes,
-      category: values.category,
-      isFavorite: values.isFavorite,
-      imageId: values.imageId,
-    });
-    showToast({ message: 'تم حفظ التعديلات' });
-    haptic('success');
-    navigate(`/item/${id}`, { replace: true });
+    setSubmitting(true);
+    try {
+      await updateItem(id, {
+        name: values.name,
+        location: values.location,
+        notes: values.notes,
+        category: values.category,
+        isFavorite: values.isFavorite,
+        imageId: values.imageId,
+      });
+      showToast({ message: 'تم حفظ التعديلات' });
+      haptic('success');
+      navigate(`/item/${id}`, { replace: true });
+    } catch (err) {
+      setSubmitting(false);
+      throw err;
+    }
   }
 
   return (
@@ -65,6 +72,7 @@ export function EditItemPage() {
           imageId: item.imageId,
         }}
         submitLabel="حفظ التعديلات"
+        submitting={submitting}
         onSubmit={handleSubmit}
         onCancel={() => navigate(-1)}
       />

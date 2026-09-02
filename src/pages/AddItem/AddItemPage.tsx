@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
 import { TopBar } from '../../components/common/TopBar';
@@ -11,19 +12,26 @@ export function AddItemPage() {
   const [params] = useSearchParams();
   const { showToast } = useToast();
   const prefillName = params.get('name') ?? '';
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(values: ItemFormValues) {
-    const item = await createItem({
-      name: values.name,
-      location: values.location,
-      notes: values.notes,
-      category: values.category,
-      isFavorite: values.isFavorite,
-      imageId: values.imageId,
-    });
-    showToast({ message: 'تم حفظ مكان الغرض' });
-    haptic('success');
-    navigate(`/item/${item.id}`, { replace: true });
+    setSubmitting(true);
+    try {
+      const item = await createItem({
+        name: values.name,
+        location: values.location,
+        notes: values.notes,
+        category: values.category,
+        isFavorite: values.isFavorite,
+        imageId: values.imageId,
+      });
+      showToast({ message: 'تم حفظ مكان الغرض' });
+      haptic('success');
+      navigate(`/item/${item.id}`, { replace: true });
+    } catch (err) {
+      setSubmitting(false);
+      throw err;
+    }
   }
 
   return (
@@ -32,6 +40,7 @@ export function AddItemPage() {
       <ItemForm
         initial={{ name: prefillName }}
         submitLabel="حفظ"
+        submitting={submitting}
         onSubmit={handleSubmit}
         onCancel={() => navigate(-1)}
       />

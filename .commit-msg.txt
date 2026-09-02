@@ -1,17 +1,8 @@
-Fix data integrity: atomic purge, backup merge respects soft-deletes, validate imageId
+Prevent double-submit in AddItemPage, EditItemPage, and MoveItemSheet
 
-Three issues fixed:
+Rapid double-tap on the submit button or pressing Enter while a save
+was in-flight could create duplicate items or trigger duplicate moves.
 
-1. purgeDeletedItems was not transactional: each item was deleted in a
-   separate operation, so a failure mid-loop left partial state. Now all
-   purges run inside a single transaction on db.items + db.images.
-   permanentlyDeleteItem is also wrapped in the same transaction scope.
-
-2. Backup merge could resurrect soft-deleted items: the merge compared
-   only updatedAt, so an older non-deleted backup copy could overwrite a
-   newer locally-deleted copy. Now if the local copy is soft-deleted and
-   the incoming copy is not, the local deleted state is preserved.
-
-3. createItem accepted imageId without verifying the image exists in
-   db.images, allowing dangling references. Now validates and throws if
-   the referenced image is missing.
+- AddItemPage: manage submitting state, pass to ItemForm, reset on error
+- EditItemPage: same submitting guard
+- MoveItemSheet: early return if busy at the top of submit()

@@ -30,7 +30,7 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!item) return;
+    if (!item || busy) return;
     setError(null);
     const trimmed = location.trim();
     if (!trimmed) {
