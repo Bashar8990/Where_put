@@ -29,6 +29,10 @@ export function ItemDetailsPage() {
   const [moveOpen, setMoveOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [lightbox, setLightbox] = useState(false);
+  // When true, the item was soft-deleted and we're showing a transient
+  // "deleted" state with an undo toast. We stay on this page (instead of
+  // navigating away immediately) so the undo callback can safely call load().
+  const [justDeleted, setJustDeleted] = useState(false);
 
   async function load() {
     if (!id) return;
@@ -46,6 +50,20 @@ export function ItemDetailsPage() {
       <AppLayout hideFab>
         <TopBar title="تفاصيل الغرض" showBack />
         <p className="text-muted text-sm text-center py-8">جارٍ التحميل…</p>
+      </AppLayout>
+    );
+  }
+
+  if (justDeleted) {
+    const deletedName = item?.name ?? 'الغرض';
+    return (
+      <AppLayout hideFab>
+        <TopBar title={deletedName} showBack backTo="/" />
+        <div className="text-center py-16">
+          <Trash2 className="w-12 h-12 text-muted mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-app font-semibold mb-1">تم حذف "{deletedName}"</p>
+          <p className="text-muted text-sm">يمكنك التراجع من الإشعار أعلاه.</p>
+        </div>
       </AppLayout>
     );
   }
@@ -79,22 +97,27 @@ export function ItemDetailsPage() {
     setConfirmDelete(false);
     await softDeleteItem(target.id);
     haptic('error');
+    // Stay on this page in a "deleted" state so the undo callback can
+    // safely call load() on this (still-mounted) component.
+    setJustDeleted(true);
     const toastId = showToast({
       message: `تم حذف "${target.name}"`,
       actionLabel: 'تراجع',
       onAction: async () => {
         await restoreItem(target.id);
+        setJustDeleted(false);
+        await load();
         showToast({ message: 'تمت الاستعادة' });
         haptic('success');
-        await load();
       },
       duration: 6000,
     });
+    // After the undo window, purge and navigate to home.
     window.setTimeout(async () => {
       await purgeDeletedItems();
+      navigate('/', { replace: true });
     }, 7000);
     void toastId;
-    navigate('/', { replace: true });
   }
 
   return (
