@@ -1,0 +1,35 @@
+import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { BottomNavigation } from './BottomNavigation';
+
+interface AppLayoutProps {
+  children: ReactNode;
+  /** Hide the FAB on certain pages (e.g. add/edit). */
+  hideFab?: boolean;
+  /** Bottom padding for fixed nav on mobile. */
+  padBottom?: boolean;
+}
+
+export function AppLayout({ children, hideFab, padBottom = true }: AppLayoutProps) {
+  return (
+    <div className="min-h-screen bg-app text-app">
+      <main className={`mx-auto max-w-3xl px-4 pt-4 ${padBottom ? 'pb-24 sm:pb-10' : ''}`}>
+        {children}
+      </main>
+
+      {!hideFab && (
+        <Link
+          to="/add"
+          className="fixed bottom-20 left-4 sm:bottom-6 z-40 inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand-600 text-white shadow-lg hover:bg-brand-700 transition-colors focus-visible:outline-brand-500"
+          aria-label="إضافة غرض"
+          title="إضافة غرض"
+        >
+          <Plus className="w-7 h-7" />
+        </Link>
+      )}
+
+      <BottomNavigation />
+    </div>
+  );
+}
