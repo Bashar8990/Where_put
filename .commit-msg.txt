@@ -1,0 +1,1 @@
+Change "نقل" button text to "تغيير المكان" in item details, card menu, and move sheet

@@ -149,7 +149,7 @@ export function ItemDetailsPage() {
             className="flex flex-col items-center gap-1 bg-surface border border-app rounded-xl py-3 hover:border-brand-400"
           >
             <MoveRight className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-            <span className="text-xs">نقل</span>
+            <span className="text-xs">تغيير المكان</span>
           </button>
           <Link
             to={`/item/${item.id}/edit`}

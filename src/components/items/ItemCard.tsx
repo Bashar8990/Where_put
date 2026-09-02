@@ -72,7 +72,7 @@ export function ItemCard({ item, onToggleFavorite, onMove, onDelete }: ItemCardP
                         onMove(item);
                       }}
                     >
-                      نقل
+                      تغيير المكان
                     </button>
                     <button
                       type="button"

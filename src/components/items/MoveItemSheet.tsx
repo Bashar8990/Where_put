@@ -56,7 +56,7 @@ export function MoveItemSheet({ open, item, onDone, onClose }: MoveItemSheetProp
         className="bg-surface text-app w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 border border-app shadow-xl safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-1 text-sm text-muted">نقل</div>
+        <div className="mb-1 text-sm text-muted">تغيير المكان</div>
         <h2 className="text-lg font-bold mb-1 truncate">{item.name}</h2>
         <p className="text-sm text-muted mb-4">
           من: <span className="text-app font-medium">{item.location}</span>
