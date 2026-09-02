@@ -21,6 +21,11 @@ beforeEach(async () => {
     backupReminderDismissedAt: null,
     installPromptDismissedAt: null,
     persistRequested: false,
+    lockEnabled: false,
+    passwordHash: null,
+    passwordSalt: null,
+    biometricEnabled: false,
+    biometricCredentialId: null,
   });
   void getDb;
 });

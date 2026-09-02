@@ -1,4 +1,4 @@
-import { Database, Download, Info, MessageCircle, Moon, Shield, Sun, Trash2, Upload, Monitor } from 'lucide-react';
+import { Database, Download, Fingerprint, Info, Lock, MessageCircle, Moon, Shield, Sun, Trash2, Upload, Monitor } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../../components/common/AppLayout';
@@ -27,6 +27,14 @@ import { getStorageEstimate } from '../../services/storage/storageService';
 import { formatBytes } from '../../utils/images';
 import { formatFullDate } from '../../utils/dates';
 import { haptic } from '../../utils/haptics';
+import {
+  changePassword,
+  disableBiometric,
+  disableLock,
+  enableBiometric,
+  enableLock,
+  isBiometricAvailable,
+} from '../../services/auth/authService';
 
 export function SettingsPage() {
   const { settings, setTheme } = useTheme();
@@ -44,17 +52,37 @@ export function SettingsPage() {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // ── Lock state ───────────────────────────────────────────────────
+  const [lockEnabled, setLockEnabled] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  // Dialogs for password setup / change / disable
+  const [lockDialog, setLockDialog] = useState<
+    | { mode: 'enable' }
+    | { mode: 'change' }
+    | { mode: 'disable' }
+    | null
+  >(null);
+  const [pw1, setPw1] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [currentPw, setCurrentPw] = useState('');
+  const [pwError, setPwError] = useState<string | null>(null);
+
   async function refresh() {
-    const [count, imgs, est, s] = await Promise.all([
+    const [count, imgs, est, s, bioAvail] = await Promise.all([
       countItems(),
       getImageStats(),
       getStorageEstimate(),
       getSettings(),
+      isBiometricAvailable(),
     ]);
     setItemCount(count);
     setImageStats(imgs);
     setStorage(est);
     setLastBackup(s.lastBackupAt);
+    setLockEnabled(s.lockEnabled);
+    setBiometricEnabled(s.biometricEnabled);
+    setBiometricSupported(bioAvail);
   }
 
   useEffect(() => {
@@ -141,6 +169,89 @@ export function SettingsPage() {
     }
   }
 
+  // ── Lock handlers ────────────────────────────────────────────────
+
+  function openLockDialog(mode: 'enable' | 'change' | 'disable') {
+    setPw1('');
+    setPw2('');
+    setCurrentPw('');
+    setPwError(null);
+    setLockDialog({ mode });
+  }
+
+  function closeLockDialog() {
+    setLockDialog(null);
+    setPw1('');
+    setPw2('');
+    setCurrentPw('');
+    setPwError(null);
+  }
+
+  async function submitLockDialog() {
+    if (!lockDialog) return;
+    setBusy(true);
+    setPwError(null);
+    try {
+      if (lockDialog.mode === 'enable') {
+        if (pw1.length < 4) {
+          setPwError('كلمة السر يجب أن تكون 4 أحرف على الأقل.');
+          return;
+        }
+        if (pw1 !== pw2) {
+          setPwError('كلمتا السر غير متطابقتين.');
+          return;
+        }
+        await enableLock(pw1);
+        showToast({ message: 'تم تفعيل قفل التطبيق' });
+        haptic('success');
+        closeLockDialog();
+      } else if (lockDialog.mode === 'change') {
+        await changePassword(currentPw, pw1);
+        showToast({ message: 'تم تغيير كلمة السر' });
+        haptic('success');
+        closeLockDialog();
+      } else if (lockDialog.mode === 'disable') {
+        await disableLock();
+        showToast({ message: 'تم إيقاف قفل التطبيق' });
+        haptic('warning');
+        closeLockDialog();
+      }
+      await refresh();
+    } catch (err) {
+      setPwError(err instanceof Error ? err.message : 'حدث خطأ.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleToggleBiometric() {
+    if (biometricEnabled) {
+      setBusy(true);
+      try {
+        await disableBiometric();
+        showToast({ message: 'تم إيقاف البصمة' });
+        haptic('light');
+        await refresh();
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      setBusy(true);
+      try {
+        await enableBiometric();
+        showToast({ message: 'تم تفعيل البصمة' });
+        haptic('success');
+        await refresh();
+      } catch (err) {
+        showToast({
+          message: err instanceof Error ? err.message : 'تعذّر تفعيل البصمة.',
+        });
+      } finally {
+        setBusy(false);
+      }
+    }
+  }
+
   return (
     <AppLayout>
       <TopBar title="الإعدادات" showBack backTo="/" />
@@ -220,6 +331,74 @@ export function SettingsPage() {
           onChange={handleRestoreFile}
         />
         <Row label="آخر نسخة احتياطية" value={lastBackup ? formatFullDate(lastBackup) : 'لا توجد'} />
+      </Section>
+
+      {/* App Lock */}
+      <Section title="قفل التطبيق" icon={<Lock className="w-4 h-4" />}>
+        {!lockEnabled ? (
+          <>
+            <p className="text-sm text-muted leading-relaxed pb-1">
+              فعّل قفل التطبيق ليُطلب منك كلمة سر عند فتحه. هذا قفل واجهة فقط
+              ولا يشفّر بياناتك.
+            </p>
+            <button
+              type="button"
+              onClick={() => openLockDialog('enable')}
+              disabled={busy}
+              className="w-full flex items-center gap-3 bg-surface-muted border border-app radius-md px-4 py-3 hover:border-brand-400 disabled:opacity-50"
+            >
+              <Lock className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+              <span className="text-sm font-medium">تفعيل كلمة السر</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <Row label="كلمة السر" value="مفعّلة" />
+            <button
+              type="button"
+              onClick={() => openLockDialog('change')}
+              disabled={busy}
+              className="w-full text-right text-sm text-brand-600 dark:text-brand-400 hover:underline py-1"
+            >
+              تغيير كلمة السر
+            </button>
+
+            {/* Biometric toggle — only show if device supports it */}
+            {biometricSupported && (
+              <div className="flex items-center justify-between py-1">
+                <span className="flex items-center gap-2 text-sm text-app">
+                  <Fingerprint className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                  البصمة
+                </span>
+                <button
+                  type="button"
+                  onClick={handleToggleBiometric}
+                  disabled={busy}
+                  className={`relative w-12 h-7 radius-full transition-colors ${
+                    biometricEnabled ? 'bg-brand-600' : 'bg-app/20'
+                  }`}
+                  aria-pressed={biometricEnabled}
+                  aria-label="تبديل البصمة"
+                >
+                  <span
+                    className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all ${
+                      biometricEnabled ? 'left-0.5' : 'right-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => openLockDialog('disable')}
+              disabled={busy}
+              className="w-full text-right text-sm text-red-600 dark:text-red-400 hover:underline py-1"
+            >
+              إيقاف قفل التطبيق
+            </button>
+          </>
+        )}
       </Section>
 
       {/* Privacy */}
@@ -329,6 +508,86 @@ export function SettingsPage() {
         danger
         onConfirm={handleWipe}
         onCancel={() => setConfirmWipe(false)}
+      />
+
+      {/* Lock password dialog (enable / change / disable) */}
+      <ConfirmDialog
+        open={!!lockDialog}
+        title={
+          lockDialog?.mode === 'enable'
+            ? 'تفعيل قفل التطبيق'
+            : lockDialog?.mode === 'change'
+              ? 'تغيير كلمة السر'
+              : 'إيقاف قفل التطبيق'
+        }
+        description={
+          <div className="space-y-3">
+            {lockDialog?.mode === 'disable' ? (
+              <p className="text-sm">
+                سيتم إيقاف قفل التطبيق وحذف كلمة السر والبصمة. لن يُطلب منك
+                كلمة سر عند فتح التطبيق بعد الآن.
+              </p>
+            ) : (
+              <>
+                {lockDialog?.mode === 'change' && (
+                  <div>
+                    <label className="block text-xs text-muted mb-1">
+                      كلمة السر الحالية
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPw}
+                      onChange={(e) => setCurrentPw(e.target.value)}
+                      autoComplete="current-password"
+                      className="w-full bg-surface text-app border border-app radius-sm px-3 py-2.5 text-sm focus:border-brand-500 outline-none"
+                      dir="ltr"
+                    />
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs text-muted mb-1">
+                    {lockDialog?.mode === 'change' ? 'كلمة السر الجديدة' : 'كلمة السر'}
+                  </label>
+                  <input
+                    type="password"
+                    value={pw1}
+                    onChange={(e) => setPw1(e.target.value)}
+                    autoComplete="new-password"
+                    className="w-full bg-surface text-app border border-app radius-sm px-3 py-2.5 text-sm focus:border-brand-500 outline-none"
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted mb-1">
+                    تأكيد كلمة السر
+                  </label>
+                  <input
+                    type="password"
+                    value={pw2}
+                    onChange={(e) => setPw2(e.target.value)}
+                    autoComplete="new-password"
+                    className="w-full bg-surface text-app border border-app radius-sm px-3 py-2.5 text-sm focus:border-brand-500 outline-none"
+                    dir="ltr"
+                  />
+                </div>
+                {pwError && (
+                  <p className="text-sm text-red-600 dark:text-red-400">{pwError}</p>
+                )}
+              </>
+            )}
+          </div>
+        }
+        confirmLabel={
+          lockDialog?.mode === 'enable'
+            ? 'تفعيل'
+            : lockDialog?.mode === 'change'
+              ? 'تغيير'
+              : 'إيقاف'
+        }
+        cancelLabel="إلغاء"
+        danger={lockDialog?.mode === 'disable'}
+        onConfirm={submitLockDialog}
+        onCancel={closeLockDialog}
       />
     </AppLayout>
   );

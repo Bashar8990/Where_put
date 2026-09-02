@@ -41,11 +41,13 @@ export function setDbForTesting(db: AppDatabase | null): void {
   _db = db;
 }
 
-/** Ensure the singleton settings row exists; returns current settings. */
+/** Ensure the singleton settings row exists; returns current settings.
+ *  Merges with DEFAULT_SETTINGS so newly-added fields get their defaults
+ *  even for existing databases that predate those fields. */
 export async function ensureSettings(): Promise<AppSettings> {
   const db = getDb();
   const existing = await db.settings.get('app');
-  if (existing) return existing;
+  if (existing) return { ...DEFAULT_SETTINGS, ...existing };
   await db.settings.put({ ...DEFAULT_SETTINGS });
   return { ...DEFAULT_SETTINGS };
 }

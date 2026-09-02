@@ -116,6 +116,11 @@ const settingsSchema = z.object({
   backupReminderDismissedAt: z.string().nullable(),
   installPromptDismissedAt: z.string().nullable(),
   persistRequested: z.boolean(),
+  lockEnabled: z.boolean().optional().default(false),
+  passwordHash: z.string().nullable().optional().default(null),
+  passwordSalt: z.string().nullable().optional().default(null),
+  biometricEnabled: z.boolean().optional().default(false),
+  biometricCredentialId: z.string().nullable().optional().default(null),
 });
 
 const manifestSchema = z.object({

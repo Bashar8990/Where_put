@@ -10,6 +10,7 @@ import { EditItemPage } from './pages/EditItem/EditItemPage';
 import { FavoritesPage } from './pages/Favorites/FavoritesPage';
 import { HomePage } from './pages/Home/HomePage';
 import { ItemDetailsPage } from './pages/ItemDetails/ItemDetailsPage';
+import { LockPage } from './pages/Lock/LockPage';
 import { LocationsPage } from './pages/Locations/LocationsPage';
 import { OnboardingPage } from './pages/Onboarding/OnboardingPage';
 import { PrivacyPage } from './pages/Privacy/PrivacyPage';
@@ -32,7 +33,9 @@ export default function App() {
 
 function AppRoutes() {
   useTheme();
-  const [bootState, setBootState] = useState<'loading' | 'onboarding' | 'ready'>('loading');
+  const [bootState, setBootState] = useState<'loading' | 'onboarding' | 'locked' | 'ready'>(
+    'loading',
+  );
 
   useEffect(() => {
     let active = true;
@@ -41,6 +44,11 @@ function AppRoutes() {
       if (!active) return;
       if (!s.onboardingCompleted) {
         setBootState('onboarding');
+        return;
+      }
+      // If the app lock is enabled, show the lock screen before anything else.
+      if (s.lockEnabled && s.passwordHash) {
+        setBootState('locked');
         return;
       }
       setBootState('ready');
@@ -76,6 +84,10 @@ function AppRoutes() {
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
       </Routes>
     );
+  }
+
+  if (bootState === 'locked') {
+    return <LockPage onUnlock={() => setBootState('ready')} />;
   }
 
   return (

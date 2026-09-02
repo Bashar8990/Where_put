@@ -81,6 +81,18 @@ export interface AppSettings {
   backupReminderDismissedAt: string | null;
   installPromptDismissedAt: string | null;
   persistRequested: boolean;
+
+  // ── App lock (UI gate, not encryption) ────────────────────────────
+  // When lockEnabled is true, the app shows a lock screen on launch
+  // requiring the password (or biometric, if enabled) before access.
+  // The password is stored as a SHA-256 hash + random salt. Biometric
+  // uses WebAuthn platform authenticator (fingerprint/face) and stores
+  // only the credential ID. No data is encrypted — this is a UI gate.
+  lockEnabled: boolean;
+  passwordHash: string | null; // base64 of SHA-256(salt + password)
+  passwordSalt: string | null; // base64 of random 16-byte salt
+  biometricEnabled: boolean;
+  biometricCredentialId: string | null; // base64 of WebAuthn credential ID
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -91,4 +103,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   backupReminderDismissedAt: null,
   installPromptDismissedAt: null,
   persistRequested: false,
+  lockEnabled: false,
+  passwordHash: null,
+  passwordSalt: null,
+  biometricEnabled: false,
+  biometricCredentialId: null,
 };
