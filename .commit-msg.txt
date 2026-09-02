@@ -1,1 +1,5 @@
-Change "نقل" button text to "تغيير المكان" in item details, card menu, and move sheet
+Fix PWA 404 on install: use dynamic start_url/scope/icons based on base path
+
+When deployed to GitHub Pages project site (/Where_put/), the PWA manifest
+was using start_url='/' and scope='/' which pointed to the GitHub 404 page.
+Now all manifest paths are derived from the base config.
